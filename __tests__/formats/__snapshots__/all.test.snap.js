@@ -1448,3 +1448,17 @@ class {
 }`;
 /* end snapshot formats all should match flutter/class.dart snapshot with fileHeaderTimestamp set */
 
+
+snapshots["formats all should match markdown/tables snapshot"] = 
+`| Name | Value | Type |
+| --- | --- | --- |
+| color_red | #FF0000 | color |
+`;
+/* end snapshot formats all should match markdown/tables snapshot */
+
+snapshots["formats all should match markdown/tables snapshot with fileHeaderTimestamp set"] = 
+`| Name | Value | Type |
+| --- | --- | --- |
+| color_red | #FF0000 | color |
+`;
+/* end snapshot formats all should match markdown/tables snapshot with fileHeaderTimestamp set */

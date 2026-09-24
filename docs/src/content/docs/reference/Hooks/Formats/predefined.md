@@ -1034,3 +1034,23 @@ class StyleDictionary {
 ```
 
 ---
+
+### markdown/tables
+
+Creates a Markdown file with a table of the tokens in the dictionary.
+
+By default each row shows the token name, its resolved value and its type. DTCG tokens read `$value`/`$type` and legacy tokens read `value`/`type`, and references are resolved so a table stays in sync with the built tokens. Composite values (shadow, typography, etc.) are rendered as a string rather than `[object Object]`, and pipes or line breaks in a name or value are escaped so they can never split a row or terminate the table.
+
+| Param             | Type                                | Description                                                                                                                                                           |
+| ----------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options.columns` | `(MarkdownTableColumn \| string)[]` | The columns to render, in order. Each entry is a token property name or an object with a `property` and an optional `header` label. Defaults to name, value and type. |
+
+Example:
+
+```md title="tokens.md"
+| Name | Value   | Type  |
+| ---- | ------- | ----- |
+| red  | #ff0000 | color |
+```
+
+---
