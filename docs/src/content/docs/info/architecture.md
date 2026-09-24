@@ -91,6 +91,8 @@ Paths are canonical posix throughout this step. `platform.buildPath` and a file'
 
 Formatting is also where filtered-out-reference warnings are reported. They are collected in a shared collector and cleared by the token that actually emits the reference, so a lookup that only inspects tokens — the reference-safe ordering pass that runs whenever `outputReferences` is set, or an `outputReferences` predicate deciding whether to emit — must not record one.
 
+Rewriting references is the other place where the shape of a token matters. A scalar token's value still holds the reference syntax (`{path.to.token}`) at this point, so references can be replaced positionally by that syntax. An object/array-valued token has already been flattened to a string, so its references are found by matching each reference's resolved value in that string — and the output is only correct if every reference keeps its own slot at its own position. That requires matching against a snapshot of the value taken before any replacement, with the replacements applied afterwards; replacement text can contain the matched value (`var(--ref, 0)` with `outputReferenceFallbacks`), so searching the string as it is being rewritten lets a later reference match inside the fallback just emitted for an earlier one. Resolved values are also not unique — several references in one composite value routinely resolve to the same string — so an occurrence may be claimed by only one reference, and none may be dropped or collapsed into another.
+
 ## 9. Run actions
 
 [Actions](/reference/hooks/actions) are custom code that run in a platform after the files are generated. They are useful for things like copying assets to specific build directories or generating images.

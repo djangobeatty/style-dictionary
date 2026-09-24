@@ -405,6 +405,50 @@ describe('common', () => {
             '  --ref: var(--foo) dashed #FF00FF;',
           );
         });
+
+        it('should give each reference in an object/array-valued token its own fallback', () => {
+          // Two shadow layers where several dimensions resolve to the identical `0`.
+          // Every reference must keep its own slot and its own resolved fallback,
+          // instead of a later reference matching inside an earlier fallback.
+          const shadowDictionary = {
+            zero: {
+              original: { value: '0', type: 'dimension' },
+              name: 'zero',
+              path: ['zero'],
+              value: '0',
+              type: 'dimension',
+            },
+            blur: {
+              original: { value: '1rem', type: 'dimension' },
+              name: 'blur',
+              path: ['blur'],
+              value: '1rem',
+              type: 'dimension',
+            },
+            shadow: {
+              original: {
+                value: [
+                  { offsetX: '{zero}', offsetY: '{blur}' },
+                  { offsetX: '{zero}', offsetY: '{zero}' },
+                ],
+                type: 'shadow',
+              },
+              name: 'shadow',
+              path: ['shadow'],
+              value: '0 1rem, 0 0',
+              type: 'shadow',
+            },
+          };
+          const propFormatter = createPropertyFormatter({
+            outputReferences: true,
+            outputReferenceFallbacks: true,
+            dictionary: { tokens: shadowDictionary },
+            format: css,
+          });
+          expect(propFormatter(shadowDictionary.shadow)).to.equal(
+            '  --shadow: var(--zero, 0) var(--blur, 1rem), var(--zero, 0) var(--zero, 0);',
+          );
+        });
       });
 
       describe('commentStyle', () => {
