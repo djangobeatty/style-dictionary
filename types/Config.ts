@@ -42,6 +42,14 @@ export interface GetReferencesOptions {
   usesDtcg?: boolean;
   unfilteredTokens?: PreprocessedTokens;
   warnImmediately?: boolean;
+  /**
+   * When `warnImmediately` is false, filtered-out references are collected into a
+   * group message that is reported at the end of the format step. Set this to
+   * false for speculative lookups (e.g. ordering tokens) where the reference is
+   * not necessarily emitted, so it should not be reported.
+   * @default true
+   */
+  recordWarnings?: boolean;
 }
 
 export interface ResolveReferencesOptions {

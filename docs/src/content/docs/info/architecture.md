@@ -85,6 +85,8 @@ Now all the design tokens are ready to be written to a file. Style Dictionary ta
 
 Formats receive token values verbatim — Style Dictionary does not escape or quote a value for the target syntax, so the value is the trust boundary for whatever a format writes. That also means a value adaptation added for one output syntax only applies where it is actually reached: the CSS-family variable formats (`css`, `scss`, `less`, `stylus`) share a single property formatter, but other templates inline values directly, and JSON/JavaScript outputs intentionally carry values untouched. When every output must agree on how a value is written, that belongs in a [transform](/reference/hooks/transforms), not a format.
 
+Formatting is also where filtered-out-reference warnings are reported. They are collected in a shared collector and cleared by the token that actually emits the reference, so a lookup that only inspects tokens — the reference-safe ordering pass that runs whenever `outputReferences` is set, or an `outputReferences` predicate deciding whether to emit — must not record one.
+
 ## 9. Run actions
 
 [Actions](/reference/hooks/actions) are custom code that run in a platform after the files are generated. They are useful for things like copying assets to specific build directories or generating images.
