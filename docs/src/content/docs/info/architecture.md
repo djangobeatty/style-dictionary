@@ -83,6 +83,8 @@ After all the tokens have been transformed, it then does another pass over the t
 
 Now all the design tokens are ready to be written to a file. Style Dictionary takes the whole transformed and resolved token object and for each file defined in the platform it [formats](/reference/hooks/formats) the token object and write the output to a file. Internally, Style Dictionary creates a flat array of all the design tokens it finds in addition to the token object. This is how you can output a flat SCSS variables file.
 
+Formats receive token values verbatim — Style Dictionary does not escape or quote a value for the target syntax, so the value is the trust boundary for whatever a format writes. That also means a value adaptation added for one output syntax only applies where it is actually reached: the CSS-family variable formats (`css`, `scss`, `less`, `stylus`) share a single property formatter, but other templates inline values directly, and JSON/JavaScript outputs intentionally carry values untouched. When every output must agree on how a value is written, that belongs in a [transform](/reference/hooks/transforms), not a format.
+
 ## 9. Run actions
 
 [Actions](/reference/hooks/actions) are custom code that run in a platform after the files are generated. They are useful for things like copying assets to specific build directories or generating images.

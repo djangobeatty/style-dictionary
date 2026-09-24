@@ -20,6 +20,7 @@ We are always happy to receive code and documentation contributions to the frame
 1. This framework is released under the [Apache license][license]. Any code you submit will be released under that license. For substantial contributions, we may ask you to sign a [Contributor License Agreement (CLA)][cla].
 2. For any significant features or API changes please reach out to us to avoid any duplicate effort.
 3. Adding to the included transforms, transformGroups, and formats, please read [this section](#what-should-be-included).
+4. Any change that affects released behavior ships a [changeset](https://github.com/changesets/changesets) entry. Add a `.changeset/*.md` file alongside the code, describing the behavior change and why it matters to consumers — the release changelog is generated from these.
 
 ## Package Manager and dependencies
 
@@ -32,6 +33,8 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 ### Code Rules
 
 1. **Do not mutate token names or values in a format.** Mutations like this should happen in a transform.
+1. **Never build an output string literal by escaping a token value.** Token values are arbitrary user text, and escaping a subset of characters (quotes, say) leaves the rest — backslashes, newlines, line separators — free to terminate the literal and break out of the surrounding declaration. If an output syntax needs a value wrapped, gate on an allowlist instead: wrap only values that provably cannot contain a character that breaks out (for example the base64 alphabet), and emit every other value verbatim. Then there is no escaping step to get wrong.
+1. **Treat token values as untrusted, verbatim input.** Style Dictionary does not sanitize or escape values for the target syntax; the value itself is the trust boundary, and any token type can carry text that splits a declaration. If a format-level adaptation is unavoidable, gate it on the specific output format and make it a no-op for every value it cannot prove safe — and prefer a transform when all outputs must agree, since formats that inline values directly (rather than through a shared helper) will not apply it.
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
