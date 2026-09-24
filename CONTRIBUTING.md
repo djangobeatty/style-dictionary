@@ -74,6 +74,12 @@ If you are adding a new transform, action, or format: please add new unit tests.
 
 We use [Astro](https://astro.build/) to transform the markdown files into a documentation website. To preview it locally, run `npm run docs:start`.
 
+### Documentation Rules
+
+1. **Docs that describe a starter are a mirror of its example directory.** `style-dictionary init <type>` does a verbatim `cpSync` of `examples/<type>` into the working directory and then builds it. So `docs/src/content/docs/getting-started/installation.mdx` is a description of `examples/basic`, and `docs/src/content/docs/examples/basic.mdx` documents that same directory. Changing an example — its token files, its `config.json` platforms, the artifacts it emits — invalidates every page that quotes it; update the docs in the same change. A guide that points the reader at a file the example does not contain is broken even if every other line is right.
+1. **Verify quoted output by running the command, not by reading the config.** Reproduce in a clean temp dir before writing or editing the sample blocks: run the command, capture stdout byte-for-byte, list the generated tree, and dump each artifact. Then paste from that. Every path, filename, token name, sample value, and platform name/count in the page must match what the tool actually writes — the config tells you what *should* be emitted, not what the current code emits, and the two drift silently.
+1. **Mark excerpts as excerpts.** A sample block that drops lines reads as a complete file to anyone who has not seen the real one. If you show a subset — a few rows of a generated XML/Kotlin/CSS file — add an elision marker (`…`) or show the file whole. The old version of a page showing a file complete is not a reason to leave a silent truncation in the new one.
+
 [issues]: https://github.com/style-dictionary/style-dictionary/issues
 [license]: https://github.com/style-dictionary/style-dictionary/blob/main/LICENSE
 [cla]: http://en.wikipedia.org/wiki/Contributor_License_Agreement
