@@ -539,9 +539,16 @@ describe('utils', () => {
             },
             stroke: {
               dashArray: {
-                key: '{stroke.dashArray}',
-                value: ['0.5rem', '0.25rem'],
-                type: 'dimension',
+                1: {
+                  key: '{stroke.dashArray.1}',
+                  value: '0.5rem',
+                  type: 'dimension',
+                },
+                2: {
+                  key: '{stroke.dashArray.2}',
+                  value: '0.25rem',
+                  type: 'dimension',
+                },
               },
               lineCap: {
                 key: '{stroke.lineCap}',
@@ -557,9 +564,16 @@ describe('utils', () => {
               // breaking the original reference
               style: {
                 dashArray: {
-                  key: '{border.style.dashArray}',
-                  value: ['0.5rem', '0.25rem'],
-                  type: 'dimension',
+                  1: {
+                    key: '{border.style.dashArray.1}',
+                    value: '0.5rem',
+                    type: 'dimension',
+                  },
+                  2: {
+                    key: '{border.style.dashArray.2}',
+                    value: '0.25rem',
+                    type: 'dimension',
+                  },
                 },
                 lineCap: {
                   key: '{border.style.lineCap}',
