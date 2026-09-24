@@ -6,6 +6,10 @@ import { Badge } from '@astrojs/starlight/components';
 
 These utilities have to do with processing/formatting tokens.
 
+:::note
+These utilities are pure. They never modify their input, and every token they return is a deep clone (`structuredClone`), so mutating a returned token's nested properties — an object-valued `value`, `attributes`, `original`, `path` — cannot leak back into the input, and mutating the input after a call cannot change results already returned. Because each dictionary view (`tokens`, `allTokens`, `tokenMap`) is cloned independently, do not rely on object identity to carry state between them.
+:::
+
 ## flattenTokens <Badge text="Deprecated" variant="danger" />
 
 > Deprecated in favor of [`convertTokenData`](/reference/utils/tokens#converttokendata), see below.
@@ -139,7 +143,7 @@ const borderToken = map.get('{border}'); // easy to access a token since it's ke
 
 /**
  * Same as above, you could use `sd.tokens` or `map` as inputs as well
- * `sd.tokens` is cheapest since it's already an object and just returns it, no conversion happens
+ * `sd.tokens` is cheapest since it's already an object — it is deep cloned and returned, no flattening needed
  * `array` is just slightly cheaper than map since map needs to call .values() Iterator to iterate
  */
 const object = convertTokenData(flatArray, { output: 'object' });
