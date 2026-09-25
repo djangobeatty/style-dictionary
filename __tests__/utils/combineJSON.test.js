@@ -14,6 +14,7 @@ import { expect } from 'chai';
 import { join } from 'path-unified';
 import yaml from 'yaml';
 import { expectThrowsAsync } from '../__helpers.js';
+import { isNode } from '../../lib/utils/isNode.js';
 import combineJSON from '../../lib/utils/combineJSON.js';
 
 describe('utils', () => {
@@ -42,6 +43,25 @@ describe('utils', () => {
       const { tokens, usesDtcg } = test;
       expect(typeof tokens).to.equal('object');
       expect(typeof usesDtcg).to.equal('boolean');
+    });
+
+    it('should handle ts modules that export objects', async () => {
+      // TypeScript modules are loaded through the native TypeScript support of the runtime
+      // (e.g. Node.js type stripping), which browsers do not have, so this test is Node only
+      if (!isNode) {
+        return;
+      }
+      const absPath = join('__tests__', '__json_files', '*.*ts');
+      const relativePath = '__tests__/__json_files/*.*ts';
+      const test = await combineJSON([absPath, relativePath]);
+      expect(typeof test).to.equal('object');
+      const { tokens, usesDtcg } = test;
+      expect(typeof tokens).to.equal('object');
+      expect(typeof usesDtcg).to.equal('boolean');
+      // values are exported from the TS/MTS modules, with their type annotations stripped
+      expect(tokens).to.have.nested.property('ts.value', 'ts module');
+      expect(tokens).to.have.nested.property('tsRef.value', '{ts}');
+      expect(tokens).to.have.nested.property('mts.value', 'mts module');
     });
 
     it('should do a deep merge', async () => {

@@ -49,6 +49,7 @@ Style Dictionary supports configuration files in these file formats:
 - JSONC
 - JSON5
 - Javascript (ES Modules, default export)
+- TypeScript (ES Modules, default export, requires a runtime with [native TypeScript support](/info/tokens/#typescript))
 
 Here is an example using an ES module for configuration:
 

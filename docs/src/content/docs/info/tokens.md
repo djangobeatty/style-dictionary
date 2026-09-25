@@ -157,7 +157,7 @@ Design token files can included inline in the configuration, or be written in se
 - JSON
 - [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments)
 - [JSON5](https://json5.org)
-- ES Modules
+- ES Modules (JavaScript or TypeScript)
 - Potentially any language with [custom parsers](/reference/hooks/parsers)
 
 Tokens can be defined _inline_ in the Style Dictionary configuration, or in files. You can add a `tokens` object to your Style Dictionary configuration like this:
@@ -310,6 +310,33 @@ export default Object.keys(baseColors).reduce((ret, color) => {
 ```
 
 Take a look at the [this example](https://github.com/amzn/style-dictionary/tree/main/examples/advanced/node-modules-as-config-and-properties) if you want to see a more in-depth example of using JavaScript files as input.
+
+### TypeScript
+
+If the JavaScript runtime you run Style Dictionary in supports TypeScript natively, you can also write your design token files as TypeScript (`.ts`, `.mts`) ES Modules. Deno and Bun support TypeScript out of the box, Node.js supports it through [type stripping](https://nodejs.org/api/typescript.html) (enabled by default from Node.js 22.18 and 23.6, or through the `--experimental-strip-types` flag on earlier versions). Style Dictionary loads these files with a regular dynamic import, so there is no transpilation step and you can use TypeScript to type check your tokens:
+
+```typescript title="color.ts"
+type Tokens = {
+  color: {
+    base: {
+      red: { value: string };
+    };
+  };
+};
+
+// Type check that this token file has the expected shape
+const tokens: Tokens = {
+  color: {
+    base: {
+      red: { value: '#ff0000' },
+    },
+  },
+};
+
+export default tokens;
+```
+
+This works for your Style Dictionary configuration file as well, e.g. `config.ts`. Since browsers cannot load TypeScript files, this only applies when running Style Dictionary in a JavaScript runtime like Node.js, Deno or Bun.
 
 ### Custom file parsers
 

@@ -19,6 +19,7 @@ import { resolve } from '../lib/resolve.js';
 import GroupMessages from '../lib/utils/groupMessages.js';
 import { convertTokenData } from '../lib/utils/convertTokenData.js';
 import { stripMeta } from '../lib/utils/stripMeta.js';
+import { isNode } from '../lib/utils/isNode.js';
 import formats from '../lib/common/formats.js';
 import { restore, stubMethod } from 'hanbi';
 
@@ -236,6 +237,21 @@ describe('StyleDictionary class', () => {
       });
       await StyleDictionaryExtended.hasInitialized;
       expect(StyleDictionaryExtended.tokens).to.eql(output);
+    });
+
+    it('should build the tokens object if a TypeScript source is given', async () => {
+      // TypeScript token files are loaded through the native TypeScript support of the runtime
+      // (e.g. Node.js type stripping), which browsers do not have, so this test is Node only
+      if (!isNode) {
+        return;
+      }
+      const StyleDictionaryExtended = new StyleDictionary({
+        source: ['__tests__/__json_files/*.*ts'],
+      });
+      await StyleDictionaryExtended.hasInitialized;
+      expect(StyleDictionaryExtended.tokens).to.have.nested.property('ts.value', 'ts module');
+      expect(StyleDictionaryExtended.tokens).to.have.nested.property('tsRef.value', '{ts}');
+      expect(StyleDictionaryExtended.tokens).to.have.nested.property('mts.value', 'mts module');
     });
 
     it('should use relative filePaths for the filePath property', async () => {
