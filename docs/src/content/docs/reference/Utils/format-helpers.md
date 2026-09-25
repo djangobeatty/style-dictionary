@@ -76,6 +76,8 @@ StyleDictionary.registerFormat({
 });
 ```
 
+`formatting.commentStyle` controls how token comments (`token.comment`, or DTCG `$description`) are rendered: `'short'` (`//`), `'long'` (`/* */`), or `'none'` to suppress them entirely. Comment rendering lives in the shared `addComment` helper, so every format that reaches it — the CSS family through `createPropertyFormatter`, and `javascript/es6`, `typescript/es6-declarations` and the SCSS `map-flat` template directly — honors `'none'` the same way. Implement comment behavior in that helper rather than at an individual call site; a call-site guard fixes one format and silently leaves the others emitting comments.
+
 ---
 
 ### fileHeader
