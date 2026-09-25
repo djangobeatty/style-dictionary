@@ -1,0 +1,71 @@
+/*
+ * Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
+ * the License. A copy of the License is located at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
+ * and limitations under the License.
+ */
+import { expect } from 'chai';
+import { expectThrowsAsync } from '../__helpers.js';
+import { loadFile } from '../../lib/utils/loadFile.js';
+import { stubMethod, restore } from 'hanbi';
+import { isNode } from '../../lib/utils/isNode.js';
+
+describe('utils', () => {
+  describe('loadFile', () => {
+    it('should fail on invalid JSON', async () => {
+      await expectThrowsAsync(
+        () => loadFile('__tests__/__json_files/broken/broken.json'),
+        "Failed to load or parse JSON or JS Object:\n\nJSON5: invalid character '!' at 2:18",
+      );
+    });
+
+    it('should support json5', async () => {
+      const tokens = await loadFile('__tests__/__json_files/shallow/3.json5');
+      expect(tokens).to.have.property('json5A', 5);
+      expect(tokens.d).to.have.property('json5e', 1);
+    });
+
+    it('should support jsonc', async () => {
+      const tokens = await loadFile('__tests__/__json_files/shallow/4.jsonc');
+      expect(tokens).to.have.property('jsonCA', 5);
+      expect(tokens.d).to.have.property('jsonCe', 1);
+    });
+
+    it('should throw error if it tries to import TS files with unsupported Node env', async () => {
+      // Node strips types natively by default since 22.18.0, and behind the
+      // --experimental-strip-types flag since 22.6.0. Only when the runtime cannot
+      // run TypeScript at all do we expect loadFile to throw.
+      if (isNode && !process.features?.typescript) {
+        let err;
+        try {
+          await loadFile('__tests__/__json_files/tokens.ts');
+        } catch (e) {
+          err = e;
+        }
+        await expect(err.message).to.matchSnapshot();
+      }
+    });
+
+    it('should support importing TS files when the runtime supports type stripping', async () => {
+      if (isNode && process.features?.typescript) {
+        const tokens = await loadFile('__tests__/__json_files/tokens.ts');
+        expect(tokens).to.have.nested.property('colors.red.500.$value', '#ff0000');
+      }
+    });
+
+    it('should support custom json extensions by warning about unrecognized file extension, using JSON5 parser as fallback', async () => {
+      const stub = stubMethod(console, 'warn');
+      const tokens = await loadFile('__tests__/__json_files/shallow/5.topojson');
+      expect(tokens).to.have.property('jsonCA', 5);
+      expect(tokens.d).to.have.property('jsonCe', 1);
+      await expect([...stub.calls][0].args[0]).to.matchSnapshot();
+      restore();
+    });
+  });
+});

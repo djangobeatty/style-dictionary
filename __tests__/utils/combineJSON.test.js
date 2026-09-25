@@ -15,6 +15,7 @@ import { join } from 'path-unified';
 import yaml from 'yaml';
 import { expectThrowsAsync } from '../__helpers.js';
 import combineJSON from '../../lib/utils/combineJSON.js';
+import { isNode } from '../../lib/utils/isNode.js';
 
 describe('utils', () => {
   describe('combineJSON', () => {
@@ -42,6 +43,20 @@ describe('utils', () => {
       const { tokens, usesDtcg } = test;
       expect(typeof tokens).to.equal('object');
       expect(typeof usesDtcg).to.equal('boolean');
+    });
+
+    it('should handle ts modules that export objects', async () => {
+      // Importing .ts files requires a runtime that supports type stripping
+      // (Deno, Bun or Node >= 22.6 with --experimental-strip-types, >= 22.18 by default)
+      if (isNode && process.features?.typescript) {
+        const { tokens } = await combineJSON(['__tests__/__json_files/*.ts']);
+        expect(tokens).to.have.nested.property('colors.red.500.$value', '#ff0000');
+        expect(tokens).to.have.nested.property(
+          'colors.red.500.filePath',
+          '__tests__/__json_files/tokens.ts',
+        );
+        expect(tokens).to.have.nested.property('colors.red.500.isSource', true);
+      }
     });
 
     it('should do a deep merge', async () => {
@@ -75,13 +90,6 @@ describe('utils', () => {
       });
     });
 
-    it('should fail on invalid JSON', async () => {
-      await expectThrowsAsync(
-        () => combineJSON(['__tests__/__json_files/broken/*.json']),
-        "Failed to load or parse JSON or JS Object: JSON5: invalid character '!' at 2:18",
-      );
-    });
-
     it('should fail if there is a collision and it is passed a collision function', async () => {
       await expectThrowsAsync(
         () =>
@@ -93,18 +101,6 @@ describe('utils', () => {
           }),
         'test',
       );
-    });
-
-    it('should support json5', async () => {
-      const { tokens } = await combineJSON(['__tests__/__json_files/shallow/*.json5']);
-      expect(tokens).to.have.property('json5A', 5);
-      expect(tokens.d).to.have.property('json5e', 1);
-    });
-
-    it('should support jsonc', async () => {
-      const { tokens } = await combineJSON(['__tests__/__json_files/shallow/*.jsonc']);
-      expect(tokens).to.have.property('jsonCA', 5);
-      expect(tokens.d).to.have.property('jsonCe', 1);
     });
 
     describe('custom parsers', () => {
