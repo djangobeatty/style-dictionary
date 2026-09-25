@@ -158,6 +158,7 @@ Design token files can included inline in the configuration, or be written in se
 - [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments)
 - [JSON5](https://json5.org)
 - ES Modules
+- TypeScript, when your runtime supports it, see [TypeScript](#typescript)
 - Potentially any language with [custom parsers](/reference/hooks/parsers)
 
 Tokens can be defined _inline_ in the Style Dictionary configuration, or in files. You can add a `tokens` object to your Style Dictionary configuration like this:
@@ -310,6 +311,50 @@ export default Object.keys(baseColors).reduce((ret, color) => {
 ```
 
 Take a look at the [this example](https://github.com/amzn/style-dictionary/tree/main/examples/advanced/node-modules-as-config-and-properties) if you want to see a more in-depth example of using JavaScript files as input.
+
+### TypeScript
+
+Design token files with a `.ts` or `.mts` extension are loaded as ES Modules as well, which means you can use TypeScript to type-check your design tokens, e.g. to verify that your themes are consistent with one another:
+
+```typescript title="light.ts"
+export const light = {
+  color: {
+    background: { value: '#ffffff', type: 'color' },
+  },
+};
+
+export default light;
+```
+
+```typescript title="dark.ts"
+import { light } from './light.ts';
+
+// let TypeScript check that the dark theme defines exactly the same tokens as the light theme
+type Theme = typeof light;
+
+export const dark: Theme = {
+  color: {
+    background: { value: '#000000', type: 'color' },
+  },
+};
+
+export default dark;
+```
+
+This requires a runtime that can execute TypeScript without a separate transpilation step:
+
+- [Deno](https://deno.com/)
+- [Bun](https://bun.sh/)
+- [Node](https://nodejs.org), which strips types by default since v23.6, and behind the `--experimental-strip-types` flag since v22.6
+
+A couple of things to keep in mind:
+
+- Type stripping erases types, it does not transform TypeScript-only syntax such as `enum` or `namespace`, so those cannot be used in your design token files.
+- Runtimes resolve import specifiers as they are written, so relative imports between your design token files must use the real `.ts` extension. In TypeScript this requires the [`allowImportingTsExtensions`](https://www.typescriptlang.org/tsconfig/#allowImportingTsExtensions) option.
+
+Style Dictionary [config files](/reference/config) can be authored in TypeScript in the same way.
+
+Alternatively, when your runtime cannot run TypeScript, you can keep authoring your tokens in TypeScript and point `source` at the transpiled JavaScript output instead.
 
 ### Custom file parsers
 

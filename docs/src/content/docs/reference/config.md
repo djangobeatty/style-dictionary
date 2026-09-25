@@ -107,6 +107,15 @@ You can also specify a custom location when you use the [CLI](/getting-started/u
 }
 ```
 
+Any file that is not a `.json`, `.json5` or `.jsonc` file is imported as a module, so a `.ts` configuration file works as well, provided your runtime can run [TypeScript](/info/tokens#typescript) natively.
+
+```json5
+// package.json
+"scripts": {
+  "build": "style-dictionary build --config ./sd.config.ts"
+}
+```
+
 ## Using in Node
 
 You can also use Style Dictionary as an [npm module](/getting-started/using_the_npm_module) and further customize how Style Dictionary is run, for example running Style Dictionary multiple times with different configurations. To do this you would create a Javascript file that imports the Style Dictionary npm module and calls the [`.extend`](/reference/api#extend) and [`.buildAllPlatforms`](/reference/api#buildallplatforms) functions.
