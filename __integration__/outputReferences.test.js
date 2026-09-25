@@ -176,5 +176,52 @@ describe('integration', async () => {
       await sd.buildAllPlatforms();
       await expect(stub.lastCall.args.map(cleanConsoleOutput).join('\n')).to.matchSnapshot();
     });
+
+    it('should not use a reference before it is defined when using DTCG syntax', async () => {
+      const sd = new StyleDictionary({
+        tokens: {
+          colors: {
+            red: {
+              $value: '#ff0000',
+              $type: 'color',
+            },
+            primary: {
+              $value: '{colors.red}',
+              $type: 'color',
+            },
+            accent: {
+              $value: '{colors.primary}',
+              $type: 'color',
+            },
+          },
+        },
+        platforms: {
+          css: {
+            transformGroup: 'css',
+            buildPath,
+            files: [
+              {
+                destination: 'variables.scss',
+                format: 'scss/variables',
+                options: {
+                  outputReferences: true,
+                },
+              },
+            ],
+          },
+        },
+      });
+      await sd.buildAllPlatforms();
+      const output = fs.readFileSync(resolve(`${buildPath}variables.scss`), {
+        encoding: 'UTF-8',
+      });
+      expect(output).to.equal(`
+// Do not edit directly, this file was auto-generated.
+
+$colors-red: #ff0000;
+$colors-primary: $colors-red;
+$colors-accent: $colors-primary;
+`);
+    });
   });
 });
