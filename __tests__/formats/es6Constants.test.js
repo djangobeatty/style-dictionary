@@ -2,9 +2,10 @@ import { expect } from 'chai';
 import formats from '../../lib/common/formats.js';
 import createFormatArgs from '../../lib/utils/createFormatArgs.js';
 import { convertTokenData } from '../../lib/utils/convertTokenData.js';
-import { formats as fileFormats } from '../../lib/enums/index.js';
+import { commentStyles, formats as fileFormats } from '../../lib/enums/index.js';
 
 const { javascriptEs6 } = fileFormats;
+const { none } = commentStyles;
 
 const file = {
   destination: 'output.js',
@@ -73,7 +74,7 @@ const format = formats[javascriptEs6];
 
 describe('formats', () => {
   describe(javascriptEs6, () => {
-    const formatArgs = (usesDtcg) =>
+    const formatArgs = (usesDtcg, options = {}) =>
       createFormatArgs({
         dictionary: {
           tokens: usesDtcg ? DTCGTokens : tokens,
@@ -84,7 +85,7 @@ describe('formats', () => {
         },
         file,
         platform: {},
-        options: { usesDtcg },
+        options: { usesDtcg, ...options },
       });
 
     it('should be a valid JS file and match snapshot', async () => {
@@ -111,6 +112,39 @@ describe('formats', () => {
         }),
       );
       await expect(output).to.matchSnapshot();
+    });
+
+    it('should not output comments when commentStyle is none', async () => {
+      const output = await format(
+        createFormatArgs({
+          dictionary: {
+            tokens: commentTokens,
+            allTokens: convertTokenData(commentTokens, { output: 'array' }),
+          },
+          file,
+          platform: {},
+          options: { formatting: { commentStyle: none } },
+        }),
+      );
+
+      expect(output).to.equal(`/**
+ * Do not edit directly, this file was auto-generated.
+ */
+
+export const red = "#EF5350";
+export const blue = "#4FEDF0";
+`);
+    });
+
+    it('should not output comments when commentStyle is none for DTCG tokens', async () => {
+      const output = await format(formatArgs(true, { formatting: { commentStyle: none } }));
+
+      expect(output).to.equal(`/**
+ * Do not edit directly, this file was auto-generated.
+ */
+
+export const red = "#EF5350";
+`);
     });
   });
 });
