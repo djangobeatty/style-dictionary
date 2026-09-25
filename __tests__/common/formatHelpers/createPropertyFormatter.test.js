@@ -1,10 +1,12 @@
 import { expect } from 'chai';
-import createPropertyFormatter from '../../../lib/common/formatHelpers/createPropertyFormatter.js';
+import createPropertyFormatter, {
+  addComment,
+} from '../../../lib/common/formatHelpers/createPropertyFormatter.js';
 import { convertTokenData } from '../../../lib/utils/convertTokenData.js';
 import { outputReferencesFilter } from '../../../lib/utils/references/outputReferencesFilter.js';
 import { commentStyles, commentPositions, propertyFormatNames } from '../../../lib/enums/index.js';
 
-const { short, long } = commentStyles;
+const { short, long, none } = commentStyles;
 const { above } = commentPositions;
 const { css, sass } = propertyFormatNames;
 
@@ -488,6 +490,28 @@ describe('common', () => {
 
           await expect(cssRed).to.matchSnapshot(1);
           await expect(sassRed).to.matchSnapshot(2);
+        });
+
+        it('should suppress the comment when commentStyle is none', () => {
+          const options = { commentStyle: none, commentPosition: above, indentation: '' };
+
+          const result = addComment('export const red = "#FF0000";', 'Foo bar qux', options);
+
+          expect(result).to.equal('export const red = "#FF0000";');
+          expect(result).to.not.contain('undefined');
+        });
+
+        it('should not output undefined for tokens with comments when commentStyle is none', () => {
+          const cssFormatter = createPropertyFormatter({
+            format: css,
+            dictionary: { tokens: commentDictionary },
+            formatting: {
+              commentStyle: none,
+            },
+          });
+
+          expect(cssFormatter(commentDictionary.color.red)).to.equal('  --color-red: #FF0000;');
+          expect(cssFormatter(commentDictionary.color.blue)).to.equal('  --color-blue: #0000FF;');
         });
       });
 

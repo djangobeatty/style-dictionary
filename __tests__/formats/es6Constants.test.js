@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import formats from '../../lib/common/formats.js';
 import createFormatArgs from '../../lib/utils/createFormatArgs.js';
 import { convertTokenData } from '../../lib/utils/convertTokenData.js';
-import { formats as fileFormats } from '../../lib/enums/index.js';
+import { commentStyles, formats as fileFormats } from '../../lib/enums/index.js';
 
 const { javascriptEs6 } = fileFormats;
 
@@ -111,6 +111,66 @@ describe('formats', () => {
         }),
       );
       await expect(output).to.matchSnapshot();
+    });
+
+    it('should suppress comments without outputting undefined when commentStyle is none', async () => {
+      const noCommentFile = {
+        ...file,
+        options: {
+          formatting: {
+            commentStyle: commentStyles.none,
+          },
+        },
+      };
+
+      const output = await format(
+        createFormatArgs({
+          dictionary: {
+            tokens,
+            allTokens: convertTokenData(tokens, { output: 'array' }),
+          },
+          file: noCommentFile,
+          platform: {},
+        }),
+      );
+
+      expect(output).to.not.contain('undefined');
+      expect(output).to.equal(
+        [
+          '/**',
+          ' * Do not edit directly, this file was auto-generated.',
+          ' */',
+          '',
+          'export const red = "#EF5350";',
+          '',
+        ].join('\n'),
+      );
+    });
+
+    it('should suppress DTCG $description comments when commentStyle is none', async () => {
+      const noCommentFile = {
+        ...file,
+        options: {
+          formatting: {
+            commentStyle: commentStyles.none,
+          },
+        },
+      };
+
+      const output = await format(
+        createFormatArgs({
+          dictionary: {
+            tokens: DTCGTokens,
+            allTokens: convertTokenData(DTCGTokens, { output: 'array', usesDtcg: true }),
+          },
+          file: noCommentFile,
+          platform: {},
+          options: { usesDtcg: true },
+        }),
+      );
+
+      expect(output).to.not.contain('undefined');
+      expect(output).to.contain('export const red = "#EF5350";');
     });
   });
 });
