@@ -56,7 +56,14 @@ We separate each function/method into its own file and group them into directori
 
 ## Testing
 
-Any new features should implement the proper unit tests. We use Jest to test our framework.
+Any new features should implement the proper unit tests.
+
+There are two test runners, and they do not run the same set of files:
+
+- `npm test` runs [Web Test Runner](https://modern-web.dev/docs/test-runner/overview/) against the browser build, with coverage enabled.
+- `npm run test:node` runs Mocha against the Node build.
+
+Test files live in **\_\_tests\_\_** (unit tests), **\_\_integration\_\_** (CLI and end-to-end flows), **\_\_node_tests\_\_** (Node-only tests — anything that depends on Node's own module resolution, file system, or runtime flags) and **\_\_perf_tests\_\_**. The browser runner does not pick up **\_\_node_tests\_\_**, so a test placed there is only exercised by `npm run test:node`; run both commands before considering a change verified.
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **\_\_tests\_\_**/formats.
 

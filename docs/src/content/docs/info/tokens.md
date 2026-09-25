@@ -157,8 +157,10 @@ Design token files can included inline in the configuration, or be written in se
 - JSON
 - [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments)
 - [JSON5](https://json5.org)
-- ES Modules
+- ES Modules (`.js`, `.mjs`) and TypeScript modules (`.ts`, `.mts`)
 - Potentially any language with [custom parsers](/reference/hooks/parsers)
+
+Which of these applies to a given file is decided by its **file extension**, not by its contents. Anything with a module extension is imported as code; everything else is read as text and parsed as JSON5.
 
 Tokens can be defined _inline_ in the Style Dictionary configuration, or in files. You can add a `tokens` object to your Style Dictionary configuration like this:
 
@@ -310,6 +312,16 @@ export default Object.keys(baseColors).reduce((ret, color) => {
 ```
 
 Take a look at the [this example](https://github.com/amzn/style-dictionary/tree/main/examples/advanced/node-modules-as-config-and-properties) if you want to see a more in-depth example of using JavaScript files as input.
+
+#### TypeScript modules
+
+`.ts` and `.mts` token files work the same way as `.js`/`.mjs`: the file is imported as a module and its **default export** is used as the token data. This means you can keep type annotations and compile-time checks in your token definitions — for example, typing a dark theme against the shape of a light theme — instead of transpiling to JavaScript as a build step first.
+
+Loading TypeScript requires a runtime that can import it: Deno and Bun natively, or Node.js 22.6+ with `--experimental-strip-types` (unflagged from Node 23.6).
+
+:::caution
+Module token files are executed, not parsed. Only point `source`/`include` globs at files you trust, the same way you would with any other code your build runs.
+:::
 
 ### Custom file parsers
 
