@@ -35,6 +35,8 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
+1. **Route token comments through the shared helper.** Comment emission is centralized in `addComment` in `lib/common/formatHelpers/createPropertyFormatter.js`, which is the single choke point that implements `commentStyle: none` suppression. Formats that render token comments must go through it (or, for template-based formats, gate on `commentStyle !== commentStyles.none`) rather than reimplementing comment rendering per format — otherwise `commentStyle: none` behaves inconsistently across formats.
+1. **Never emit `undefined` into generated output.** Guard every branch that builds a line of output. A `switch` over `commentStyle` with no `default` leaves the processed comment `undefined`, and string interpolation turns that into the literal text `undefined` in the user's generated file. Handle the `none`/unrecognized cases explicitly so output is always well-formed.
 
 ### Commit Rules
 
@@ -59,6 +61,8 @@ We separate each function/method into its own file and group them into directori
 Any new features should implement the proper unit tests. We use Jest to test our framework.
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **\_\_tests\_\_**/formats.
+
+When changing how tokens are formatted into output, cover each value of the relevant formatting option rather than just the default. Comment rendering in particular has snapshot coverage in **\_\_tests\_\_**/common/formatHelpers/createPropertyFormatter.test.js for `short` and `long`; add the corresponding case for any style you touch, including `none`.
 
 ## Documentation
 
