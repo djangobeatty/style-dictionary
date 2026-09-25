@@ -60,6 +60,8 @@ Any new features should implement the proper unit tests. We use Jest to test our
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **\_\_tests\_\_**/formats.
 
+Style Dictionary supports both the legacy (`value`, `type`) and [DTCG](https://tr.designtokens.org/format/) (`$value`, `$type`) token syntaxes. Code that reads token values can be correct in one syntax and silently wrong in the other, so tests for it should cover both. This matters most for reference handling (resolution and reference-aware output ordering), which has the most syntax-specific branches.
+
 ## Documentation
 
 We use [Astro](https://astro.build/) to transform the markdown files into a documentation website. To preview it locally, run `npm run docs:start`.

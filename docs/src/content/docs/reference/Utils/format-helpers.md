@@ -6,6 +6,12 @@ We provide some helper methods we use internally in some of the built-in formats
 
 They are accessible at `style-dictionary/utils` entrypoint.
 
+:::note
+Style Dictionary supports both the legacy syntax (`value`, `type`) and the [DTCG syntax](https://tr.designtokens.org/format/) (`$value`, `$type`). Helpers that read a token's value cannot infer which syntax is in use, so they take an explicit `usesDtcg` option that defaults to `false`.
+
+When you call these helpers from a custom format, forward the flag from the format options (`options.usesDtcg`) — and make sure it reaches _every_ helper in the call chain. A helper that receives `usesDtcg` but does not forward it to the nested helpers it calls will silently produce incorrect output for DTCG tokens (for example, a reference-aware sort degrading because it read `token.value` instead of `token.$value`).
+:::
+
 ```javascript
 import StyleDictionary from 'style-dictionary';
 import { fileHeader, formattedVariables } from 'style-dictionary/utils';
@@ -47,17 +53,20 @@ which uses: prefix, indentation, separator, suffix, and commentStyle.
 | `options.formatting`                  | `FormattingOptions`                   | Custom formatting properties that define parts of a declaration line in code. The configurable strings are: `prefix`, `indentation`, `separator`, `suffix`, `lineSeparator`, `fileHeaderTimestamp`, `header`, `footer`, `commentStyle` and `commentPosition`. Those are used to generate a line like this: `${indentation}${prefix}${token.name}${separator} ${prop.value}${suffix}`. The remaining formatting options are used for the fileHeader helper. |
 | `options.themeable`                   | `boolean`                             | Whether tokens should default to being themeable. Defaults to false.                                                                                                                                                                                                                                                                                                                                                                                       |
 
+It also accepts an `options.usesDtcg` boolean (default `false`), which must be `true` for DTCG tokens (`$value`, `$type`). Pass it through from the format options as `options.usesDtcg`.
+
 Example:
 
 ```javascript title="build-tokens.js"
 StyleDictionary.registerFormat({
   name: 'myCustomFormat',
   format: function ({ dictionary, options }) {
-    const { outputReferences } = options;
+    const { outputReferences, usesDtcg } = options;
     const formatProperty = createPropertyFormatter({
       outputReferences,
       dictionary,
       format: 'css',
+      usesDtcg,
     });
     return dictionary.allTokens.map(formatProperty).join('\n');
   },
@@ -116,6 +125,8 @@ This is used to create lists of variables like Sass variables or CSS custom prop
 | `options.formatting`                  | `Object`                              | Custom formatting properties that define parts of a comment in code. The configurable strings are: `prefix`, `lineSeparator`, `header`, and `footer`.                                                          |
 | `options.themeable`                   | `boolean`                             | Whether tokens should default to being themeable. Defaults to `false`.                                                                                                                                         |
 
+It also accepts an `options.usesDtcg` boolean (default `false`), which must be `true` for DTCG tokens (`$value`, `$type`). Pass it through from the format options as `options.usesDtcg`.
+
 Example:
 
 ```js title="build-tokens.js"
@@ -126,6 +137,7 @@ StyleDictionary.registerFormat({
       format: 'less',
       dictionary,
       outputReferences: options.outputReferences,
+      usesDtcg: options.usesDtcg,
     });
   },
 });
@@ -269,15 +281,25 @@ will sort the allTokens array based on references. This is to make sure
 if you use output references that you never use a reference before it is
 defined.
 
-| Param                         | Type                 | Description                                                                                         |
-| ----------------------------- | -------------------- | --------------------------------------------------------------------------------------------------- |
-| `dictionary`                  | `Dictionary`         | Transformed Dictionary object containing allTokens, tokens and unfilteredTokens.                    |
-| `dictionary.allTokens`        | `TransformedToken[]` | Flattened array of all tokens, easiest to loop over and export to a flat format.                    |
-| `dictionary.tokens`           | `TransformedTokens`  | All tokens, still in unflattened object format.                                                     |
-| `dictionary.unfilteredTokens` | `TransformedTokens`  | All tokens, still in unflattened object format, including tokens that were filtered out by filters. |
+The first argument is the token object to resolve references against, usually `dictionary.tokens`.
+The optional second argument takes an `unfilteredTokens` property (all tokens in unflattened object format, including tokens that were filtered out by filters) and a `usesDtcg` boolean.
+`usesDtcg` is required for correct ordering of DTCG tokens (`$value`, `$type`) — without it the helper reads the wrong value property and produces an incorrect order.
 
 Example:
 
 ```javascript title="build-tokens.js"
-dictionary.allTokens.sort(sortByReference(dictionary));
+StyleDictionary.registerFormat({
+  name: 'myCustomFormat',
+  format: function ({ dictionary, options }) {
+    return dictionary.allTokens
+      .sort(
+        sortByReference(dictionary.tokens, {
+          unfilteredTokens: dictionary.unfilteredTokens,
+          usesDtcg: options.usesDtcg,
+        }),
+      )
+      .map((token) => `${token.name} = ${token.value}`)
+      .join('\n');
+  },
+});
 ```
