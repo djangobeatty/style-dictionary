@@ -35,12 +35,35 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
+1. **Handle both token syntaxes.** See [Supporting DTCG and v3 token syntax](#supporting-dtcg-and-v3-token-syntax).
+
+### Supporting DTCG and v3 token syntax
+
+A token's value and type live under `value`/`type` in v3 syntax and under `$value`/`$type` in DTCG syntax. Which one applies is carried at runtime by the boolean `usesDtcg` flag, which is exposed on format `options` and threaded explicitly through the utils and format helpers.
+
+1. **Never read `value`, `type`, `original.value`, or `original.$value` directly.** Branch on `usesDtcg` at the point of access, e.g. `usesDtcg ? token.original?.$value : token.original?.value`. A hard-coded read silently yields `undefined` for half of all users, and most downstream predicates treat `undefined` as a benign "no", so the failure is a wrong result rather than an error.
+1. **Thread `usesDtcg` through every call.** A helper that accepts the flag is useless if its caller drops it. When adding a call to a util or format helper that takes `usesDtcg`, pass it — `options` in a format body almost always already has it in scope. DTCG references can be written in full-path form (`{colors.red.$value}`), and reference resolution only strips the `.$value` suffix when the flag is set.
+1. **Test both syntaxes.** A fix verified only against v3 tokens does not demonstrate DTCG behaviour, and vice versa. The expected result for an equivalent token set is identical output in both syntaxes; assert that equivalence rather than just the one you were debugging.
 
 ### Commit Rules
 
 We follow [conventional commits'](https://www.conventionalcommits.org/en/v1.0.0-beta.2/#specification) specification.
 
 Please follow the spec to have a successful commit.
+
+### Changesets
+
+Any change that users can observe — a bug fix, a new transform/format, a type change — needs a changeset. Run `npx changeset` and describe the change from the user's point of view; it lands as a new file in `.changeset/` and feeds the release notes. Changes with no user-visible effect (internal refactors, test-only changes, CI) don't need one.
+
+### Do not commit release-time artifacts
+
+`npm run build` is part of the release (`npm run release`), not a local development step. Running it rewrites files in place and `git add`s them, so it is easy to commit release machinery by accident. Before committing, check `git status`/`git diff` for:
+
+- **`lib/StyleDictionary.js`'s version placeholder.** `static VERSION` holds the literal sentinel `'<? version placeholder ?>'`, which `scripts/inject-version.js` substitutes at publish time. If a resolved version number is committed, the substitution becomes a permanent no-op and every future release reports a stale `VERSION` — silently, since nothing fails.
+- **`examples/*/*/package.json` dependency ranges.** The same script bumps the `style-dictionary` devDependency in every example to the version being released. Those bumps belong to the release commit.
+- **Generated `.d.ts` files.** `tsc --emitDeclarationOnly` writes declarations next to their `lib/**/*.js` sources. They are build output; only hand-written declarations (`types/`, `docs/src/env.d.ts`) are tracked.
+
+To type-check without emitting, use `npm run lint:types` (`tsc --noEmit`).
 
 ## What should be included?
 
@@ -56,9 +79,16 @@ We separate each function/method into its own file and group them into directori
 
 ## Testing
 
-Any new features should implement the proper unit tests. We use Jest to test our framework.
+Any new features should implement the proper unit tests. Tests are written with Mocha and Chai, and run two ways:
+
+- `npm test` runs the suite in a browser via [@web/test-runner](https://modern-web.dev/docs/test-runner/overview/), with coverage.
+- `npm run test:node` runs the unit, integration, and node-only suites under Mocha. This is the fastest full check while developing.
+
+Run `npm run lint` as well; it covers ESLint, Prettier, and `tsc --noEmit`.
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **\_\_tests\_\_**/formats.
+
+When fixing a bug, prefer an assertion on the exact output string over a looser structural check. Many defects here — ordering, formatting, reference resolution — produce output that is still well-formed and only wrong in its detail, so a structural assertion passes on broken output.
 
 ## Documentation
 
