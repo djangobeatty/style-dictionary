@@ -76,6 +76,11 @@ StyleDictionary.registerFormat({
 });
 ```
 
+`commentStyle` accepts `'short'`, `'long'`, or `'none'`. With `'none'`, token comments are suppressed
+entirely: a token that has a `comment` (or a DTCG `$description`) still emits only its declaration
+line. `formattedVariables` passes `formatting` through to this helper, so `commentStyle` — including
+`'none'` — works there as well.
+
 ---
 
 ### fileHeader

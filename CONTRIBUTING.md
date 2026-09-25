@@ -34,6 +34,8 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Do not mutate token names or values in a format.** Mutations like this should happen in a transform.
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
+1. **Handle every value of an option enum.** Options coming from user config are merged in unchecked, so a `switch` on an enum-like value (e.g. `commentStyle`) must cover every member of the enum and return its input unchanged in a `default` case. A missing branch leaves a variable `undefined`, which gets string-interpolated into the output as the literal `undefined` instead of failing loudly.
+1. **Keep cross-format behavior in the shared helper.** When an option is meant to behave the same in every format (such as suppressing comments), implement it once in the helper that all affected formats call rather than guarding at each call site — otherwise some formats honor the option and others silently don't.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
 
 ### Commit Rules
@@ -56,9 +58,14 @@ We separate each function/method into its own file and group them into directori
 
 ## Testing
 
-Any new features should implement the proper unit tests. We use Jest to test our framework.
+Any new features should implement the proper unit tests.
+
+- `npm run test:node` runs the Node test suites (`__tests__`, `__integration__` and `__node_tests__`) with Mocha.
+- `npm test` runs the browser test suites with Web Test Runner, which needs Chromium installed once via `npx playwright install --with-deps chromium`. It also enforces coverage thresholds, so it can fail on coverage even when every test passes.
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **\_\_tests\_\_**/formats.
+
+Use `npm run lint:types` (`tsc --noEmit`) to type check without touching the working tree. `npm run build` runs `scripts/inject-version.js` first, which rewrites version placeholders in `lib/StyleDictionary.js` and the example `package.json` files and stages those files with `git add`.
 
 ## Documentation
 
