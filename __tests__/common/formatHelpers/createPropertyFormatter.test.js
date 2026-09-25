@@ -272,6 +272,38 @@ describe('common', () => {
           expect(propFormatter(tokens.qux)).to.equal('  --qux: 5px;');
         });
 
+        it('DTCG: should output refs that explicitly point at the $value property', () => {
+          const tokens = {
+            foo: {
+              $value: '5px',
+              original: {
+                $value: '5px',
+                $type: 'spacing',
+              },
+              name: 'foo',
+              path: ['foo'],
+              $type: 'spacing',
+            },
+            bar: {
+              $value: '5px',
+              original: {
+                $value: '{foo.$value}',
+                $type: 'spacing',
+              },
+              name: 'bar',
+              path: ['bar'],
+              $type: 'spacing',
+            },
+          };
+          const propFormatter = createPropertyFormatter({
+            dictionary: { tokens, allTokens: flattenTokens(tokens, true) },
+            format: 'css',
+            outputReferences: true,
+            usesDtcg: true,
+          });
+          expect(propFormatter(tokens.bar)).to.equal('  --bar: var(--foo);');
+        });
+
         it('should make it easy to not output refs for tokens that contains refs that are filtered out', () => {
           const unfilteredTokens = {
             foo: {

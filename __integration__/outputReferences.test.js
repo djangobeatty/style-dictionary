@@ -86,6 +86,56 @@ describe('integration', async () => {
       await expect(output).to.matchSnapshot();
     });
 
+    // https://github.com/amzn/style-dictionary/issues/1324
+    ['value', '$value'].forEach((valueProp) => {
+      const usesDtcg = valueProp === '$value';
+      it(`should define tokens before they are referenced when using the ${
+        usesDtcg ? 'DTCG' : 'default'
+      } syntax`, async () => {
+        restore();
+        const sd = new StyleDictionary({
+          tokens: {
+            colors: {
+              red: { [valueProp]: '#ff0000', [usesDtcg ? '$type' : 'type']: 'color' },
+              green: { [valueProp]: '#00ff00', [usesDtcg ? '$type' : 'type']: 'color' },
+              primary: {
+                [valueProp]: '{colors.red}',
+                [usesDtcg ? '$type' : 'type']: 'color',
+              },
+            },
+          },
+          platforms: {
+            css: {
+              transformGroup: 'css',
+              buildPath,
+              files: [
+                {
+                  destination: `sortedVariables${usesDtcg ? 'Dtcg' : ''}.scss`,
+                  format: 'scss/variables',
+                  options: {
+                    outputReferences: true,
+                  },
+                },
+              ],
+            },
+          },
+        });
+        await sd.buildAllPlatforms();
+        const output = fs.readFileSync(
+          resolve(`${buildPath}sortedVariables${usesDtcg ? 'Dtcg' : ''}.scss`),
+          { encoding: 'UTF-8' },
+        );
+
+        expect(output).to.include(
+          [
+            '$colors-red: #ff0000;',
+            '$colors-green: #00ff00;',
+            '$colors-primary: $colors-red;',
+          ].join('\n'),
+        );
+      });
+    });
+
     it('should warn the user if filters out references briefly', async () => {
       const sd = new StyleDictionary({
         // we are only testing showFileHeader options so we don't need

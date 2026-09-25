@@ -269,15 +269,20 @@ will sort the allTokens array based on references. This is to make sure
 if you use output references that you never use a reference before it is
 defined.
 
-| Param                         | Type                 | Description                                                                                         |
-| ----------------------------- | -------------------- | --------------------------------------------------------------------------------------------------- |
-| `dictionary`                  | `Dictionary`         | Transformed Dictionary object containing allTokens, tokens and unfilteredTokens.                    |
-| `dictionary.allTokens`        | `TransformedToken[]` | Flattened array of all tokens, easiest to loop over and export to a flat format.                    |
-| `dictionary.tokens`           | `TransformedTokens`  | All tokens, still in unflattened object format.                                                     |
-| `dictionary.unfilteredTokens` | `TransformedTokens`  | All tokens, still in unflattened object format, including tokens that were filtered out by filters. |
+| Param                   | Type                | Description                                                                                         |
+| ----------------------- | ------------------- | --------------------------------------------------------------------------------------------------- |
+| `tokens`                | `TransformedTokens` | All tokens, still in unflattened object format.                                                     |
+| `opts`                  | `Object`            | Options object.                                                                                     |
+| `opts.unfilteredTokens` | `TransformedTokens` | All tokens, still in unflattened object format, including tokens that were filtered out by filters. |
+| `opts.usesDtcg`         | `boolean`           | Whether the tokens use the DTCG syntax (`$value`) or not, `false` by default.                       |
 
 Example:
 
 ```javascript title="build-tokens.js"
-dictionary.allTokens.sort(sortByReference(dictionary));
+dictionary.allTokens.sort(
+  sortByReference(dictionary.tokens, {
+    unfilteredTokens: dictionary.unfilteredTokens,
+    usesDtcg: options.usesDtcg,
+  }),
+);
 ```
