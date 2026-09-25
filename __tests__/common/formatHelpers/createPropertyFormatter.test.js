@@ -1,11 +1,13 @@
 import { expect } from 'chai';
-import createPropertyFormatter from '../../../lib/common/formatHelpers/createPropertyFormatter.js';
+import createPropertyFormatter, {
+  addComment,
+} from '../../../lib/common/formatHelpers/createPropertyFormatter.js';
 import { convertTokenData } from '../../../lib/utils/convertTokenData.js';
 import { outputReferencesFilter } from '../../../lib/utils/references/outputReferencesFilter.js';
 import { commentStyles, commentPositions, propertyFormatNames } from '../../../lib/enums/index.js';
 
-const { short, long } = commentStyles;
-const { above } = commentPositions;
+const { short, long, none } = commentStyles;
+const { above, inline } = commentPositions;
 const { css, sass } = propertyFormatNames;
 
 const dictionary = {
@@ -488,6 +490,38 @@ describe('common', () => {
 
           await expect(cssRed).to.matchSnapshot(1);
           await expect(sassRed).to.matchSnapshot(2);
+        });
+
+        it('should not output a comment when commentStyle is none', () => {
+          const cssFormatter = createPropertyFormatter({
+            format: css,
+            dictionary: { tokens: commentDictionary },
+            formatting: {
+              commentStyle: none,
+            },
+          });
+
+          expect(cssFormatter(commentDictionary.color.red)).to.equal('  --color-red: #FF0000;');
+          expect(cssFormatter(commentDictionary.color.blue)).to.equal('  --color-blue: #0000FF;');
+        });
+
+        it('addComment should return the token as is when commentStyle is none', () => {
+          expect(
+            addComment('export const colorRed = "#FF0000";', 'Foo bar qux', {
+              commentStyle: none,
+              commentPosition: inline,
+              indentation: '',
+            }),
+          ).to.equal('export const colorRed = "#FF0000";');
+
+          // multi-line comments are put above the token, should be skipped as well
+          expect(
+            addComment('export const colorBlue = "#0000FF";', 'Foo\nbar\nqux', {
+              commentStyle: none,
+              commentPosition: inline,
+              indentation: '',
+            }),
+          ).to.equal('export const colorBlue = "#0000FF";');
         });
       });
 

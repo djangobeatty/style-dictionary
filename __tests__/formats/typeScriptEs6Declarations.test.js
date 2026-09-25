@@ -2,9 +2,10 @@ import { expect } from 'chai';
 import formats from '../../lib/common/formats.js';
 import createFormatArgs from '../../lib/utils/createFormatArgs.js';
 import { convertTokenData } from '../../lib/utils/convertTokenData.js';
-import { formats as fileFormats } from '../../lib/enums/index.js';
+import { commentStyles, formats as fileFormats } from '../../lib/enums/index.js';
 
 const { typescriptEs6Declarations } = fileFormats;
+const { none } = commentStyles;
 
 const file = {
   destination: 'output.ts',
@@ -130,6 +131,19 @@ describe('formats', () => {
       const output = await format(formatArgs(true, customFile));
 
       await expect(output).to.matchSnapshot();
+    });
+
+    it('should not output comments when commentStyle is none', async () => {
+      const customFile = {
+        ...file,
+        options: {
+          formatting: { commentStyle: none },
+        },
+      };
+      const output = await format(formatArgs(false, customFile));
+
+      expect(output).to.not.include('undefined');
+      expect(output).to.include('export const colorRed: string;');
     });
   });
 });
