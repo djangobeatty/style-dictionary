@@ -88,5 +88,42 @@ describe('formats', () => {
 
       expect(themeableScss).to.match(new RegExp('#EF5350 !default;'));
     });
+
+    it('should output references in definition order when using DTCG syntax', async () => {
+      const dtcgTokens = {
+        colors: {
+          red: {
+            name: 'colors-red',
+            $value: '#ff0000',
+            $type: 'color',
+            original: { $value: '#ff0000', $type: 'color' },
+            path: ['colors', 'red'],
+          },
+          primary: {
+            name: 'colors-primary',
+            $value: '{colors.red}',
+            $type: 'color',
+            original: { $value: '{colors.red}', $type: 'color' },
+            path: ['colors', 'primary'],
+          },
+        },
+      };
+      const result = await format(
+        createFormatArgs({
+          dictionary: {
+            tokens: dtcgTokens,
+            allTokens: flattenTokens(dtcgTokens, true),
+          },
+          file,
+          platform: {},
+          options: { outputReferences: true, usesDtcg: true },
+        }),
+        {},
+        file,
+      );
+      expect(result).to.equal(
+        '\n// Do not edit directly, this file was auto-generated.\n\n$colors-red: #ff0000;\n$colors-primary: $colors-red;\n',
+      );
+    });
   });
 });
