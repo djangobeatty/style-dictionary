@@ -103,6 +103,10 @@ You can pass a third `options` argument where you can pass some configuration op
 - `unfilteredTokens`, assuming the second `tokens` argument is your filtered `tokens` object where [filters](/reference/hooks/filters) have already done its work, you'll likely want to pass the unfiltered set in case the reference you're trying to find no longer exist in the filtered set, but you still want to get the reference values. This is useful when you're writing your own custom format with an `outputReferences` feature and you want to prevent outputting refs that no longer exist in the filtered set.
 - `warnImmediately` boolean, `true` by default. You should only set this to `false` if you know that this utility is used inside of the Format lifecycle hook of Style Dictionary, allowing the errors to be grouped and only thrown at the end of the format step.
 
+:::note
+A reference may also point explicitly at a token's value property — `{color.red.value}` in legacy syntax, `{color.red.$value}` in DTCG. The reference utilities strip that trailing `.value`/`.$value` suffix before looking up the token, but only when `usesDtcg` tells them which syntax to expect. Omitting the flag makes the suffix part of the lookup path, so the reference resolves to the token's raw value rather than to the token itself.
+:::
+
 ### Complicated example
 
 You can use the `getReferences` utility to create your own custom formats that have `outputReferences` capability.
@@ -240,7 +244,8 @@ export const Border = `solid ${Spacing2} ${SemanticBgPrimary}`;
 
 :::note
 The above example does not support DTCG syntax, but this could be quite easily added,
-since you can query `sd.usesDtcg` or inside a format functions `dictionary.options.usesDtcg`.
+since you can query `sd.usesDtcg` or, inside a format function, `options.usesDtcg`.
+Remember to forward that flag to `getReferences`/`resolveReferences` as well.
 :::
 
 ## outputReferencesFilter

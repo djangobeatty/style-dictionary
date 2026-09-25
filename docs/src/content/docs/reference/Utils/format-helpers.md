@@ -269,15 +269,27 @@ will sort the allTokens array based on references. This is to make sure
 if you use output references that you never use a reference before it is
 defined.
 
-| Param                         | Type                 | Description                                                                                         |
-| ----------------------------- | -------------------- | --------------------------------------------------------------------------------------------------- |
-| `dictionary`                  | `Dictionary`         | Transformed Dictionary object containing allTokens, tokens and unfilteredTokens.                    |
-| `dictionary.allTokens`        | `TransformedToken[]` | Flattened array of all tokens, easiest to loop over and export to a flat format.                    |
-| `dictionary.tokens`           | `TransformedTokens`  | All tokens, still in unflattened object format.                                                     |
-| `dictionary.unfilteredTokens` | `TransformedTokens`  | All tokens, still in unflattened object format, including tokens that were filtered out by filters. |
+| Param                   | Type                | Description                                                                                                                                                                   |
+| ----------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tokens`                | `TransformedTokens` | All tokens in unflattened object format, e.g. `dictionary.tokens`.                                                                                                            |
+| `opts`                  | `Object`            |                                                                                                                                                                               |
+| `opts.unfilteredTokens` | `TransformedTokens` | All tokens, still in unflattened object format, including tokens that were filtered out by filters, e.g. `dictionary.unfilteredTokens`.                                       |
+| `opts.usesDtcg`         | `boolean`           | Whether DTCG token syntax (`$value`/`$type`) is used. Must be set for DTCG tokens, otherwise the sorter cannot see any of their values and will not order them by dependency. |
 
 Example:
 
 ```javascript title="build-tokens.js"
-dictionary.allTokens.sort(sortByReference(dictionary));
+StyleDictionary.registerFormat({
+  name: 'myCustomFormat',
+  format: function ({ dictionary, options }) {
+    // forward `usesDtcg` from the options so DTCG tokens sort correctly
+    dictionary.allTokens.sort(
+      sortByReference(dictionary.tokens, {
+        unfilteredTokens: dictionary.unfilteredTokens,
+        usesDtcg: options.usesDtcg,
+      }),
+    );
+    // ...
+  },
+});
 ```

@@ -35,6 +35,7 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
+1. **Handle both token syntaxes.** Style Dictionary accepts legacy (`value`/`type`/`description`) and DTCG (`$value`/`$type`/`$description`) tokens. Any code that reads those properties, or that resolves references between tokens, must branch on the `usesDtcg` flag (available as `options.usesDtcg` inside a format function) and use the `$`-prefixed key. When calling reference utilities — `getReferences`, `resolveReferences`, `sortByReference`, `createPropertyFormatter`, `formattedVariables`, `outputReferencesFilter`, `outputReferencesTransformed` — forward the `usesDtcg` flag through. A dropped flag usually reads `undefined` or mis-resolves a reference rather than throwing, so the mistake surfaces as silently wrong output, not an error.
 
 ### Commit Rules
 
