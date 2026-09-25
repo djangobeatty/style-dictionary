@@ -35,6 +35,7 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
+1. **Handle every enum value explicitly in format helpers.** Format functions spread the user-supplied `formatting` object over their own defaults, so any value a user configures reaches the shared helpers — helpers cannot assume only their own defaults will arrive. When a helper branches on an enum-like value such as `commentStyle`, cover every member of that enum (`'short'`, `'long'` **and** `'none'`), and prefer an explicit early return over relying on a `switch` to catch values implicitly. An accumulator declared with `let` and only assigned inside `case` blocks stays `undefined` when no case matches, and interpolating it emits the literal text `undefined` into generated output rather than failing loudly.
 
 ### Commit Rules
 
@@ -56,7 +57,11 @@ We separate each function/method into its own file and group them into directori
 
 ## Testing
 
-Any new features should implement the proper unit tests. We use Jest to test our framework.
+Any new features should implement the proper unit tests.
+
+- Browser-safe tests run with [web-test-runner](https://modern-web.dev/docs/test-runner/overview/) via `npm test`. Tests that need Node APIs (including everything under `__integration__/`) run with Mocha via `npm run test:node`.
+- Node tests must be run through the Mocha root hooks file: `mocha -r mocha-hooks.mjs`. `npm run test:node` does this for you; invoking `mocha` directly without it makes snapshot matchers (`matchSnapshot`) fail with a missing-plugin error, because `mocha-hooks.mjs` is what registers the chai-as-promised and snapshot plugins and fixes the date.
+- Run `npm run test:update-snapshots` to regenerate snapshots after an intentional output change.
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **\_\_tests\_\_**/formats.
 
