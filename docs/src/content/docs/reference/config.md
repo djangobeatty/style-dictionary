@@ -49,6 +49,7 @@ Style Dictionary supports configuration files in these file formats:
 - JSONC
 - JSON5
 - Javascript (ES Modules, default export)
+- TypeScript (ES Modules, default export), when running on a runtime that supports importing TypeScript natively, e.g. Node.js >= 22.18 (or >= 22.6 with `--experimental-strip-types`), Bun or Deno
 
 Here is an example using an ES module for configuration:
 

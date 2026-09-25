@@ -15,6 +15,23 @@ import { join } from 'path-unified';
 import yaml from 'yaml';
 import { expectThrowsAsync } from '../__helpers.js';
 import combineJSON from '../../lib/utils/combineJSON.js';
+import { isNode } from '../../lib/utils/isNode.js';
+
+// TypeScript files can only be imported natively by runtimes that support type stripping,
+// e.g. Node.js >= 22.18 (or >= 22.6 with --experimental-strip-types), Bun and Deno.
+// On runtimes without support, these tests are skipped rather than failing.
+let supportsTypeScript = false;
+if (isNode) {
+  const tsFixture = '../__json_files/typescript/module_exports_object.ts';
+  try {
+    await import(/* @vite-ignore */ tsFixture);
+    supportsTypeScript = true;
+  } catch {
+    supportsTypeScript = false;
+  }
+}
+
+const describeTypeScript = supportsTypeScript ? describe : describe.skip;
 
 describe('utils', () => {
   describe('combineJSON', () => {
@@ -105,6 +122,24 @@ describe('utils', () => {
       const { tokens } = await combineJSON(['__tests__/__json_files/shallow/*.jsonc']);
       expect(tokens).to.have.property('jsonCA', 5);
       expect(tokens.d).to.have.property('jsonCe', 1);
+    });
+
+    describeTypeScript('typescript', () => {
+      it('should support .ts token files', async () => {
+        const { tokens } = await combineJSON(['__tests__/__json_files/typescript/*.ts']);
+        expect(tokens).to.have.nested.property('foo.value', 'bar');
+        expect(tokens).to.have.nested.property('bar.value', '{foo}');
+      });
+
+      it('should support .mts token files', async () => {
+        const { tokens } = await combineJSON(['__tests__/__json_files/typescript/*.mts']);
+        expect(tokens).to.have.nested.property('foo.value', 'bar');
+      });
+
+      it('should support .cts token files', async () => {
+        const { tokens } = await combineJSON(['__tests__/__json_files/typescript/*.cts']);
+        expect(tokens).to.have.nested.property('foo.value', 'bar');
+      });
     });
 
     describe('custom parsers', () => {

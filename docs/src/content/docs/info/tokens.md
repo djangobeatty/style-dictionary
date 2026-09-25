@@ -157,7 +157,8 @@ Design token files can included inline in the configuration, or be written in se
 - JSON
 - [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments)
 - [JSON5](https://json5.org)
-- ES Modules
+- ES Modules (`.js`, `.mjs`)
+- TypeScript (`.ts`, `.mts`, `.cts`), when running on a runtime that supports importing TypeScript natively, e.g. Node.js >= 22.18 (or >= 22.6 with `--experimental-strip-types`), Bun or Deno
 - Potentially any language with [custom parsers](/reference/hooks/parsers)
 
 Tokens can be defined _inline_ in the Style Dictionary configuration, or in files. You can add a `tokens` object to your Style Dictionary configuration like this:
