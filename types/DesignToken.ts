@@ -59,6 +59,19 @@ export interface TransformedTokens {
   [key: string]: TransformedTokens | TransformedToken;
 }
 
+/**
+ * Collects the warnings about references that the filter of a file excluded.
+ * Style Dictionary creates one per formatted file and passes it along on the
+ * dictionary, so that a warning recorded while formatting a file is reported
+ * for that file only.
+ */
+export interface FilteredReferences {
+  add(messageGroup: string, message: string): void;
+  remove(messageGroup: string, message: string): void;
+  count(messageGroup: string): number;
+  fetchMessages(messageGroup: string): string[];
+}
+
 export interface Dictionary {
   tokens: TransformedTokens;
   allTokens: TransformedToken[];
@@ -66,6 +79,11 @@ export interface Dictionary {
   unfilteredTokens?: TransformedTokens;
   unfilteredAllTokens?: TransformedToken[];
   unfilteredTokenMap?: Map<string, TransformedToken>;
+  /**
+   * The collector that the format and format helpers of the file currently
+   * being built record warnings about filtered-out references into.
+   */
+  filteredReferences?: FilteredReferences;
 }
 
 /**

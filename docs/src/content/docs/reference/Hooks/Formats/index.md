@@ -437,6 +437,8 @@ StyleDictionary.registerFormat({
 });
 ```
 
+A format function is called concurrently: the files of a platform are formatted at the same time, and so are the platforms themselves, in no particular order. It must not accumulate results in module scope — do that and one file's work lands in another's output depending on which one finishes first. Keep per-file state on the `dictionary` or `file` you are handed. A custom format that resolves references itself with `warnImmediately: false` should pass `dictionary.filteredReferences` to [`getReferences`](/reference/utils/references/#getreferences) so a filtered-out-reference warning is attributed to the file it belongs to.
+
 ---
 
 To use your custom format, you call it by name in the file configuration object:

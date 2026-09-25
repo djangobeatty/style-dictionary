@@ -1,4 +1,9 @@
-import type { DesignToken, DesignTokens, PreprocessedTokens } from './DesignToken.js';
+import type {
+  DesignToken,
+  DesignTokens,
+  FilteredReferences,
+  PreprocessedTokens,
+} from './DesignToken.js';
 import type { Filter } from './Filter.js';
 import type { FileHeader, File, FormattingOverrides } from './File.js';
 import type { Parser } from './Parser.js';
@@ -50,6 +55,14 @@ export interface GetReferencesOptions {
    * @default true
    */
   recordWarnings?: boolean;
+  /**
+   * The collector to record warnings about filtered-out references into.
+   * Style Dictionary passes the collector of the file that is currently being
+   * formatted, so that a warning is never attributed to a sibling file that
+   * is formatted concurrently. Without a collector, the warning is printed
+   * right away instead, since there is no file to report it for.
+   */
+  filteredReferences?: FilteredReferences;
 }
 
 export interface ResolveReferencesOptions {
