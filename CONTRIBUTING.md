@@ -35,6 +35,9 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
+1. **Shared format helpers render, they do not decide.** Helpers such as the comment builder in `lib/common/formatHelpers` assume their caller already decided that something should be emitted. Their `switch` statements only branch on the values that produce output, so an opt-out value like `commentStyles.none` falls through and interpolates `undefined` into generated source. Guard at the call site — `if (comment && commentStyle !== none)` — instead of expecting the helper to no-op, and copy that guard whenever you add a call site.
+1. **Merge formatting defaults per key with `??`, not object spread.** `{ ...defaults, ...formatting }` lets a key that is present but explicitly `undefined` erase the default. `commentStyle: formatting.commentStyle ?? commentStyles.short` resolves correctly in both cases.
+1. **A new value in `lib/enums` is a codebase-wide change.** Those objects are public API and are mirrored in `types/`. Adding a value means auditing every `switch` and conditional that consumes the enum. A value that is publicly typed but unhandled by one consumer is corrupt output, not user error.
 
 ### Commit Rules
 
@@ -56,9 +59,19 @@ We separate each function/method into its own file and group them into directori
 
 ## Testing
 
-Any new features should implement the proper unit tests. We use Jest to test our framework.
+Any new features should implement the proper unit tests. Tests run in a headless Chromium browser via [Web Test Runner][wtr]; `npm test` runs the whole suite and enforces coverage thresholds.
 
-If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **\_\_tests\_\_**/formats.
+If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **\_\_tests\_\_**/formats. End-to-end builds belong in **\_\_integration\_\_**.
+
+### Test conventions
+
+- **Assert equivalence, not absence.** When an option suppresses part of the output, assert the result is byte-identical to a build of equivalent input that never produced that output in the first place. Asserting only that some substring is missing passes happily while a literal `undefined` sits in the generated source.
+- **Sweep every built-in format** when an option is documented as universally supported. A test against the one format you had in mind only proves that format.
+- **Cover both levels an option can be set at** — directly on the file, and inherited from the platform's `formatting` block — because formats read the merged object, and only one of the two paths is usually exercised.
+
+A test file that does not depend on the browser fixture mirroring set up in `web-test-runner.config.mjs` can be run on its own with `npx mocha -r mocha-hooks.mjs <file>`. Anything reading mirrored fixtures needs the full runner.
+
+Running the suite from a git worktree whose `node_modules` resolves outside the project root emits `ENOENT` instrumentation errors and fails the coverage gate spuriously. In that situation, trust the pass/fail counts rather than the coverage thresholds.
 
 ## Documentation
 
@@ -68,3 +81,4 @@ We use [Astro](https://astro.build/) to transform the markdown files into a docu
 [license]: https://github.com/style-dictionary/style-dictionary/blob/main/LICENSE
 [cla]: http://en.wikipedia.org/wiki/Contributor_License_Agreement
 [eslint]: https://github.com/style-dictionary/style-dictionary/blob/main/eslint.config.js
+[wtr]: https://modern-web.dev/docs/test-runner/overview/
