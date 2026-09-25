@@ -281,3 +281,5 @@ Example:
 ```javascript title="build-tokens.js"
 dictionary.allTokens.sort(sortByReference(dictionary));
 ```
+
+Pass `usesDtcg: true` when the tokens use the [DTCG syntax](/info/dtcg/) (`$value`/`$type`), so that the sorter reads each token's original value from `original.$value` and resolves DTCG references correctly. This defaults to `false`, matching the legacy v3 syntax.

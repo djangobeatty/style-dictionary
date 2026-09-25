@@ -402,6 +402,10 @@ StyleDictionary.registerFormat({
 });
 ```
 
+:::note
+The example above assumes the legacy v3 token syntax. When the config uses [DTCG syntax](/info/dtcg/) (`$value`/`$type`), the original value lives on `token.original.$value` instead of `token.original.value`, and the reference utilities need to be told about it via their `usesDtcg` option. Query `options.usesDtcg` (also available as `dictionary.options.usesDtcg`) and branch accordingly — for example `options.usesDtcg ? token.original.$value : token.original.value`. Reading `token.original.value` directly returns `undefined` for DTCG tokens, so a custom format that ignores this will silently drop references rather than error.
+:::
+
 ---
 
 ## Using a template / templating engine to create a format
