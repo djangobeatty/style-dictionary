@@ -71,13 +71,15 @@ Note that [tokens expansion](/reference/config#expand) runs after the user-confi
 
 ## 6. Transform the tokens
 
-Style Dictionary now traverses over the whole token object and looks for design tokens. It does this by looking for anything with a `value` key. When it comes across a design token, it then performs all the [transforms](/reference/hooks/transforms) defined in your [config](/reference/config) in order.
+Style Dictionary now traverses over the whole token object and looks for design tokens. It does this by looking for anything with a `value` key, or a `$value` key when the tokens use the [DTCG format](/info/dtcg/). When it comes across a design token, it then performs all the [transforms](/reference/hooks/transforms) defined in your [config](/reference/config) in order.
 
 Value transforms, transforms that modify a token's value, are skipped if the token references another token. Starting in 3.0, you can define a [transitive transform](/reference/hooks/transforms#transitive-transforms) that will transform a value that references another token after that reference has been resolved.
 
 ## 7. Resolve aliases / references to other values
 
 After all the tokens have been transformed, it then does another pass over the token object looking for aliases, which look like `"{size.font.base.value}"`. When it finds these, it then replaces the reference with the transformed value. Because Style Dictionary merges all token files into a single object, aliases can be in any token file and still work.
+
+Circular references are detected in this step and fail the build with a `Reference Errors` message before any file is written. Formats and format helpers that walk reference chains can therefore assume the graph is acyclic — a recursive reference walk does not need a cycle guard.
 
 ## 8. Format the tokens into files
 

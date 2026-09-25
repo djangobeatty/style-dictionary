@@ -35,6 +35,8 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
+1. **Read token properties in a DTCG-aware way.** Never hard-code `.value`, `.type` or `.description` when reading from a token. Under the [DTCG spec](https://tr.designtokens.org/format/) those live on `$value`, `$type` and `$description`, so pick the property from the `usesDtcg` flag: `usesDtcg ? token.$value : token.value`. Inside a format the flag is on `options.usesDtcg`; helpers receive it as an option.
+1. **Forward `usesDtcg` to reference utilities.** `usesReferences`, `getReferences` and `resolveReferences` use the flag to parse reference paths, since a reference may carry a `.value`/`.$value` suffix. Any helper that takes tokens and calls these must pass `usesDtcg` along, or DTCG references will not be recognized.
 
 ### Commit Rules
 

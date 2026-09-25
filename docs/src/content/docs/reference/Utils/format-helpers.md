@@ -269,15 +269,24 @@ will sort the allTokens array based on references. This is to make sure
 if you use output references that you never use a reference before it is
 defined.
 
-| Param                         | Type                 | Description                                                                                         |
-| ----------------------------- | -------------------- | --------------------------------------------------------------------------------------------------- |
-| `dictionary`                  | `Dictionary`         | Transformed Dictionary object containing allTokens, tokens and unfilteredTokens.                    |
-| `dictionary.allTokens`        | `TransformedToken[]` | Flattened array of all tokens, easiest to loop over and export to a flat format.                    |
-| `dictionary.tokens`           | `TransformedTokens`  | All tokens, still in unflattened object format.                                                     |
-| `dictionary.unfilteredTokens` | `TransformedTokens`  | All tokens, still in unflattened object format, including tokens that were filtered out by filters. |
+| Param                   | Type                | Description                                                               |
+| ----------------------- | ------------------- | ------------------------------------------------------------------------- |
+| `tokens`                | `TransformedTokens` | The transformed Dictionary's `tokens` object.                             |
+| `opts`                  | `Object`            |                                                                           |
+| `opts.unfilteredTokens` | `TransformedTokens` | All tokens, including tokens that were filtered out by filters.           |
+| `opts.usesDtcg`         | `boolean`           | Whether the tokens use DTCG syntax (`$value` props). Defaults to `false`. |
 
 Example:
 
 ```javascript title="build-tokens.js"
-dictionary.allTokens.sort(sortByReference(dictionary));
+dictionary.allTokens.sort(
+  sortByReference(dictionary.tokens, {
+    unfilteredTokens: dictionary.unfilteredTokens,
+    usesDtcg: dictionary.options.usesDtcg,
+  }),
+);
 ```
+
+:::note
+Pass `usesDtcg` (usually `dictionary.options.usesDtcg`) so the helper reads values from `$value` and resolves references in [DTCG-formatted](/info/dtcg/) tokens.
+:::
