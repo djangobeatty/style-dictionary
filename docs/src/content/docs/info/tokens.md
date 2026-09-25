@@ -158,7 +158,19 @@ Design token files can included inline in the configuration, or be written in se
 - [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments)
 - [JSON5](https://json5.org)
 - ES Modules
+- TypeScript (`.ts`, `.mts`, `.cts`), using the native type stripping of your runtime
 - Potentially any language with [custom parsers](/reference/hooks/parsers)
+
+TypeScript token files are imported directly, so they require a runtime that can strip types
+without a build step: Node.js 22.6+ (with `--experimental-strip-types`, enabled by default from
+23.6), [Deno](https://deno.com) or [Bun](https://bun.sh). Type stripping only erases type syntax;
+it does not change the module system or generate any code, which has a few consequences:
+
+- Features that need code generation (such as `enum` or `namespace`) are not supported.
+- `.cts` files are treated as CommonJS, so they must use CommonJS syntax (`module.exports = ...`)
+  rather than `export default`.
+- Node.js refuses to strip types for files inside `node_modules`, so token packages that ship
+  `.ts` sources cannot be loaded this way.
 
 Tokens can be defined _inline_ in the Style Dictionary configuration, or in files. You can add a `tokens` object to your Style Dictionary configuration like this:
 
