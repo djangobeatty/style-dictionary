@@ -19,6 +19,7 @@ import type { Preprocessor } from './Preprocessor.d.ts';
 import type { Transform } from './Transform.d.ts';
 import type { Formatter } from './Format.d.ts';
 import type { Action } from './Action.d.ts';
+import type { LogConfig, LogConfigShorthand } from './LogConfig.d.ts';
 
 export interface LocalOptions {
   showFileHeader?: boolean;
@@ -45,6 +46,8 @@ export interface ResolveReferencesOptions extends RegexOptions {
 }
 
 export interface ResolveReferencesOptionsInternal extends ResolveReferencesOptions {
+  /** the token file the value being resolved originates from, used for error messaging */
+  filePath?: string;
   current_context?: string[];
   stack?: string[];
   foundCirc?: Record<string, boolean>;
@@ -53,7 +56,7 @@ export interface ResolveReferencesOptionsInternal extends ResolveReferencesOptio
 }
 
 export interface PlatformConfig extends RegexOptions {
-  log?: 'warn' | 'error';
+  log?: LogConfig | LogConfigShorthand;
   transformGroup?: string;
   transforms?: string[] | Omit<Transform, 'name'>[];
   basePxFontSize?: number;
@@ -65,7 +68,7 @@ export interface PlatformConfig extends RegexOptions {
 }
 
 export interface Config {
-  log?: 'warn' | 'error';
+  log?: LogConfig | LogConfigShorthand;
   source?: string[];
   include?: string[];
   tokens?: DesignTokens;

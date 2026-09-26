@@ -6,11 +6,13 @@
 
 Create a new StyleDictionary instance.
 
-| Param        | Type                           | Description                                                                                                                                                                      |
-| ------------ | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| config       | [<code>Config</code>](#Config) | Configuration options to build your style dictionary. If you pass a string, it will be used as a path to a JSON config file. You can also pass an object with the configuration. |
-| options      | <code>Object</code>            | Options object when creating a new StyleDictionary instance.                                                                                                                     |
-| options.init | <code>Boolean</code>           | `true` by default but can be disabled to delay initializing the dictionary. You can then call `sdInstance.init()` yourself, e.g. for testing or error handling purposes.         |
+| Param             | Type                           | Description                                                                                                                                                                      |
+| ----------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| config            | [<code>Config</code>](#Config) | Configuration options to build your style dictionary. If you pass a string, it will be used as a path to a JSON config file. You can also pass an object with the configuration. |
+| options           | <code>Object</code>            | Options object when creating a new StyleDictionary instance.                                                                                                                     |
+| options.init      | <code>Boolean</code>           | `true` by default but can be disabled to delay initializing the dictionary. You can then call `sdInstance.init()` yourself, e.g. for testing or error handling purposes.         |
+| options.warnings  | <code>String</code>            | Overrides `config.log.warnings`, see [logging](config.md#logging). This is how the CLI passes its `--no-warn` flag.                                                              |
+| options.verbosity | <code>String</code>            | Overrides `config.log.verbosity`, see [logging](config.md#logging). This is how the CLI passes its `--verbose` and `--silent` flags.                                             |
 
 **Example**
 

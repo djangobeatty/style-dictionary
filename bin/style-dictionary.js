@@ -37,33 +37,65 @@ function getConfigPath(options) {
   return configPath;
 }
 
+/**
+ * Turns the logging related CLI flags into a log config that takes precedence
+ * over the `log` property of the user's configuration.
+ */
+function getLogOverrides(options) {
+  const log = {};
+  if (options.verbose) {
+    log.verbosity = 'verbose';
+  }
+  // --silent wins over --verbose, asking for no logs is the more explicit ask
+  if (options.silent) {
+    log.verbosity = 'silent';
+  }
+  // commander sets `warn` to false when --no-warn is passed
+  if (options.warn === false) {
+    log.warnings = 'disabled';
+  }
+  return log;
+}
+
+/**
+ * Logging options that both `build` and `clean` understand.
+ */
+function addLogOptions(command) {
+  return command
+    .option('-v, --verbose', 'log every token collision and reference error, instead of a summary')
+    .option('-s, --silent', 'silence all logging')
+    .option('-n, --no-warn', 'silence warnings, errors are still logged/thrown');
+}
+
 program.version(pkg.version).description(pkg.description).usage('[command] [options]');
 
-program
-  .command('build')
-  .description('Builds a style dictionary package from the current directory.')
-  .option('-c, --config <path>', 'set config path. defaults to ./config.json')
-  .option(
-    '-p, --platform [platform]',
-    'only build specific platforms. Must be defined in the config',
-    collect,
-    [],
-  )
-  .action(styleDictionaryBuild);
+addLogOptions(
+  program
+    .command('build')
+    .description('Builds a style dictionary package from the current directory.')
+    .option('-c, --config <path>', 'set config path. defaults to ./config.json')
+    .option(
+      '-p, --platform [platform]',
+      'only build specific platforms. Must be defined in the config',
+      collect,
+      [],
+    ),
+).action(styleDictionaryBuild);
 
-program
-  .command('clean')
-  .description(
-    'Removes files specified in the config of the style dictionary package of the current directory.',
-  )
-  .option('-c, --config <path>', 'set config path. defaults to ./config.json')
-  .option(
-    '-p, --platform [platform]',
-    'only clean specific platform(s). Must be defined in the config',
-    collect,
-    [],
-  )
-  .action(styleDictionaryClean);
+addLogOptions(
+  program
+    .command('clean')
+    .description(
+      'Removes files specified in the config of the style dictionary package of the current directory.',
+    )
+    .option('-c, --config <path>', 'set config path. defaults to ./config.json')
+    .option(
+      '-p, --platform [platform]',
+      'only clean specific platform(s). Must be defined in the config',
+      collect,
+      [],
+    ),
+).action(styleDictionaryClean);
 
 program
   .command('init <type>')
@@ -99,7 +131,7 @@ async function styleDictionaryBuild(options) {
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = new StyleDictionary(configPath, getLogOverrides(options));
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(
@@ -115,7 +147,7 @@ async function styleDictionaryClean(options) {
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = new StyleDictionary(configPath, getLogOverrides(options));
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(

@@ -1,0 +1,6 @@
+{
+  "color": {
+    "brand": { "value": "{color.does.not.exist}", "type": "color" },
+    "loop": { "value": "{color.loop}", "type": "color" }
+  }
+}

@@ -153,6 +153,77 @@ describe(`integration`, () => {
           expect(stub.callCount).to.equal(1);
           expect(stub.firstCall.args).to.eql(['\ncss']);
         });
+
+        it(`should list every reference error, its chain and its file when verbose`, async () => {
+          const sd = new StyleDictionary({
+            log: { verbosity: `verbose` },
+            // these tokens live in files, so the errors can point at them
+            source: [`__integration__/tokens/broken/_*.json`],
+            platforms: {
+              css: {},
+            },
+          });
+          let error;
+          try {
+            await sd.buildAllPlatforms();
+          } catch (e) {
+            error = e;
+          }
+          await expect(cleanConsoleOutput(error.message)).to.matchSnapshot();
+        });
+
+        it(`should only summarize reference errors by default`, async () => {
+          const sd = new StyleDictionary({
+            source: [`__integration__/tokens/broken/_*.json`],
+            platforms: {
+              css: {},
+            },
+          });
+          let error;
+          try {
+            await sd.buildAllPlatforms();
+          } catch (e) {
+            error = e;
+          }
+          await expect(cleanConsoleOutput(error.message)).to.matchSnapshot();
+        });
+
+        it(`should throw reference errors even when silent, because they are not warnings`, async () => {
+          const sd = new StyleDictionary({
+            log: { verbosity: `silent`, warnings: `disabled` },
+            tokens: {
+              color: {
+                danger: { value: '{color.red.value}' },
+              },
+            },
+            platforms: {
+              css: {},
+            },
+          });
+          let error;
+          try {
+            await sd.buildAllPlatforms();
+          } catch (e) {
+            error = e;
+          }
+          expect(error.message).to.include(`Some token references (1) could not be found.`);
+          expect(stub.called).to.be.false;
+        });
+      });
+
+      it(`should allow a platform to deviate from the dictionary log config`, async () => {
+        const sd = new StyleDictionary({
+          log: { verbosity: `silent` },
+          tokens: {},
+          platforms: {
+            css: {},
+            android: { log: { verbosity: `default` } },
+          },
+        });
+        await sd.buildAllPlatforms();
+        // the silent css platform doesn't log its name, the android platform does
+        const logs = Array.from(stub.calls).flatMap((call) => call.args);
+        expect(logs).to.eql(['\nandroid']);
       });
     });
   });

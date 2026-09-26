@@ -133,7 +133,7 @@ describe('utils', () => {
         expect(resolveReferences(obj.a, obj)).to.equal('{b}');
         expect(GroupMessages.count(PROPERTY_REFERENCE_WARNINGS)).to.equal(1);
         expect(JSON.stringify(GroupMessages.fetchMessages(PROPERTY_REFERENCE_WARNINGS))).to.equal(
-          JSON.stringify(['Circular definition cycle:  b, c, d, a, b']),
+          JSON.stringify(['Circular definition cycle: b → c → d → a → b']),
         );
       });
 
@@ -142,7 +142,7 @@ describe('utils', () => {
         expect(resolveReferences(obj.j, obj)).to.equal('{a.b.c}');
         expect(GroupMessages.count(PROPERTY_REFERENCE_WARNINGS)).to.equal(1);
         expect(JSON.stringify(GroupMessages.fetchMessages(PROPERTY_REFERENCE_WARNINGS))).to.equal(
-          JSON.stringify(['Circular definition cycle:  a.b.c, j, a.b.c']),
+          JSON.stringify(['Circular definition cycle: a.b.c → j → a.b.c']),
         );
       });
 
@@ -151,7 +151,7 @@ describe('utils', () => {
         expect(resolveReferences(obj.c.d.e, obj)).to.equal('{a.b}');
         expect(GroupMessages.count(PROPERTY_REFERENCE_WARNINGS)).to.equal(1);
         expect(JSON.stringify(GroupMessages.fetchMessages(PROPERTY_REFERENCE_WARNINGS))).to.equal(
-          JSON.stringify(['Circular definition cycle:  a.b, c.d.e, a.b']),
+          JSON.stringify(['Circular definition cycle: a.b → c.d.e → a.b']),
         );
       });
 
@@ -160,7 +160,7 @@ describe('utils', () => {
         expect(resolveReferences(obj.h.i, obj)).to.equal('{a.b.c.d}');
         expect(GroupMessages.count(PROPERTY_REFERENCE_WARNINGS)).to.equal(1);
         expect(JSON.stringify(GroupMessages.fetchMessages(PROPERTY_REFERENCE_WARNINGS))).to.equal(
-          JSON.stringify(['Circular definition cycle:  a.b.c.d, e.f.g, h.i, a.b.c.d']),
+          JSON.stringify(['Circular definition cycle: a.b.c.d → e.f.g → h.i → a.b.c.d']),
         );
       });
 
@@ -169,7 +169,7 @@ describe('utils', () => {
         expect(resolveReferences(obj.n, obj)).to.equal('{l}');
         expect(GroupMessages.count(PROPERTY_REFERENCE_WARNINGS)).to.equal(1);
         expect(JSON.stringify(GroupMessages.fetchMessages(PROPERTY_REFERENCE_WARNINGS))).to.equal(
-          JSON.stringify(['Circular definition cycle:  l, m, l']),
+          JSON.stringify(['Circular definition cycle: l → m → l']),
         );
       });
 

@@ -67,6 +67,11 @@ Options:
 | :----------------- | :----------------------------------- | :---------------------------------------------------------------------------------------------------- |
 | Configuration Path | -c <path>, --config <path>           | Set the path to the configuration file. Defaults to './config.json'.                                  |
 | Platform           | -p <platform>, --platform <platform> | Only build a specific platform. If not supplied, builds all platform found in the configuration file. |
+| Verbose            | -v, --verbose                        | Log every token collision and reference error, instead of a summary.                                  |
+| Silent             | -s, --silent                         | Silence all logging. Errors are still thrown.                                                         |
+| No warnings        | -n, --no-warn                        | Silence warnings. Errors are still logged and thrown.                                                 |
+
+The three logging options take precedence over the [log config](config.md#logging) in your configuration file.
 
 ## clean
 
@@ -82,6 +87,9 @@ Options:
 | :----------------- | :----------------------------------- | :---------------------------------------------------------------------------------------------------- |
 | Configuration Path | -c <path>, --config <path>           | Set the path to the configuration file. Defaults to './config.json'.                                  |
 | Platform           | -p <platform>, --platform <platform> | Only clean a specific platform. If not supplied, cleans all platform found in the configuration file. |
+| Verbose            | -v, --verbose                        | Log every token collision and reference error, instead of a summary.                                  |
+| Silent             | -s, --silent                         | Silence all logging. Errors are still thrown.                                                         |
+| No warnings        | -n, --no-warn                        | Silence warnings. Errors are still logged and thrown.                                                 |
 
 ## init
 

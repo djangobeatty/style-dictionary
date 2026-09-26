@@ -37,13 +37,15 @@ describe(`integration >`, () => {
   describe(`logging >`, () => {
     describe(`config >`, () => {
       describe(`property value collisions`, () => {
+        // including a specific file twice will throw value collision warnings
+        const source = [
+          `__integration__/tokens/size/padding.json`,
+          `__integration__/tokens/size/_padding.json`,
+        ];
+
         it(`should not throw, but notify users by default`, async () => {
           const sd = new StyleDictionary({
-            source: [
-              // including a specific file twice will throw value collision warnings
-              `__integration__/tokens/size/padding.json`,
-              `__integration__/tokens/size/_padding.json`,
-            ],
+            source,
             platforms: {},
           });
           await sd.hasInitialized;
@@ -51,15 +53,22 @@ describe(`integration >`, () => {
           await expect(consoleOutput).to.matchSnapshot();
         });
 
-        it(`should not show warnings if given higher log level`, async () => {
+        it(`should list every collision and the file it came from when verbose`, async () => {
+          const sd = new StyleDictionary({
+            log: { verbosity: `verbose` },
+            source,
+            platforms: {},
+          });
+          await sd.hasInitialized;
+          const consoleOutput = stub.firstCall.args.map(cleanConsoleOutput).join('\n');
+          await expect(consoleOutput).to.matchSnapshot();
+        });
+
+        it(`should throw instead of warn if warnings are errors`, async () => {
           const sd = new StyleDictionary(
             {
-              log: `error`,
-              source: [
-                // including a specific file twice will throw value collision warnings
-                `__integration__/tokens/size/padding.json`,
-                `__integration__/tokens/size/_padding.json`,
-              ],
+              log: { warnings: `error` },
+              source,
               platforms: {},
             },
             { init: false },
@@ -73,6 +82,60 @@ describe(`integration >`, () => {
           }
 
           await expect(error.message).to.matchSnapshot();
+          expect(stub.called).to.be.false;
+        });
+
+        it(`should support the 'warn'|'error' shorthand for the warnings level`, async () => {
+          const sd = new StyleDictionary(
+            {
+              log: `error`,
+              source,
+              platforms: {},
+            },
+            { init: false },
+          );
+
+          let error;
+          try {
+            await sd.init();
+          } catch (e) {
+            error = e;
+          }
+
+          expect(error.message).to.include(`Token collisions detected (4)`);
+          expect(stub.called).to.be.false;
+        });
+
+        it(`should not notify users if warnings are disabled`, async () => {
+          const sd = new StyleDictionary({
+            log: { warnings: `disabled` },
+            source,
+            platforms: {},
+          });
+          await sd.hasInitialized;
+          expect(stub.called).to.be.false;
+        });
+
+        it(`should not notify users if silent`, async () => {
+          const sd = new StyleDictionary({
+            log: { verbosity: `silent` },
+            source,
+            platforms: {},
+          });
+          await sd.hasInitialized;
+          expect(stub.called).to.be.false;
+        });
+
+        it(`should let constructor log options, which is how the CLI passes its flags, win`, async () => {
+          const sd = new StyleDictionary(
+            {
+              log: { verbosity: `verbose` },
+              source,
+              platforms: {},
+            },
+            { verbosity: `silent` },
+          );
+          await sd.hasInitialized;
           expect(stub.called).to.be.false;
         });
       });

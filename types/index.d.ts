@@ -13,6 +13,14 @@ export type { FileHeader, File } from './File.d.ts';
 
 export type { Filter } from './Filter.d.ts';
 
+export type {
+  LogConfig,
+  LogConfigShorthand,
+  LogVerbosity,
+  LogWarningLevel,
+  ResolvedLogConfig,
+} from './LogConfig.d.ts';
+
 export type { Format } from './Format.d.ts';
 
 export type { Parser } from './Parser.d.ts';
