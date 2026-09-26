@@ -49,6 +49,8 @@ program
     collect,
     [],
   )
+  .option('-v, --verbose', 'show every warning and error in full detail')
+  .option('-s, --silent', 'do not log anything to the console')
   .action(styleDictionaryBuild);
 
 program
@@ -63,6 +65,8 @@ program
     collect,
     [],
   )
+  .option('-v, --verbose', 'show every warning and error in full detail')
+  .option('-s, --silent', 'do not log anything to the console')
   .action(styleDictionaryClean);
 
 program
@@ -94,12 +98,30 @@ program.on('command:*', function () {
   process.exit(1);
 });
 
+/**
+ * Create a StyleDictionary instance, applying the CLI `--verbose` / `--silent`
+ * flags before initializing so they can influence config parsing/merging.
+ * @param {string} configPath
+ * @param {{ verbose?: boolean, silent?: boolean }} options
+ */
+async function createStyleDictionary(configPath, options) {
+  const styleDictionary = new StyleDictionary(configPath, { init: false });
+  if (options.verbose) {
+    styleDictionary.verbose = true;
+  }
+  if (options.silent) {
+    styleDictionary.silent = true;
+  }
+  await styleDictionary.init();
+  return styleDictionary;
+}
+
 async function styleDictionaryBuild(options) {
   options = options || {};
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = await createStyleDictionary(configPath, options);
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(
@@ -115,7 +137,7 @@ async function styleDictionaryClean(options) {
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = await createStyleDictionary(configPath, options);
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(

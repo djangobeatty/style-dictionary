@@ -34,6 +34,7 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Do not mutate token names or values in a format.** Mutations like this should happen in a transformer.
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
+1. **Log through the logger.** Use `lib/utils/logger.js` rather than calling `console` directly, so output honors the `verbose` / `silent` settings. Keep default output concise — report counts and point to `--verbose` for detail — and never let `silent` hide an error that aborts the build.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
 
 ### Commit Rules
@@ -56,9 +57,11 @@ We separate each function/method into its own file and group them into directori
 
 ## Testing
 
-Any new features should implement the proper unit tests. We use Jest to test our framework.
+Any new features should implement the proper unit tests. Browser and framework tests run with [web-test-runner](https://modern-web.dev/docs/test-runner/overview/) (`npm run test:browser`); node-only tests run with mocha (`npm run test:node`), which loads `mocha-hooks.mjs` for the shared chai plugins.
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **tests**/formats.
+
+Tests that assert on console output (logging, CLI behaviour) belong in `__node_tests__/`. Spawn the CLI with `FORCE_COLOR=0` and `NO_COLOR=1`, then strip ANSI codes with `cleanConsoleOutput` from `__integration__/_constants.js` before asserting, so the test does not depend on chalk's color support.
 
 ## Documentation
 

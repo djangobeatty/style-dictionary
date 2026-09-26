@@ -47,3 +47,17 @@ Now all the design tokens are ready to be written to a file. Style Dictionary ta
 [Actions](actions.md) are custom code that run in a platform after the files are generated. They are useful for things like copying assets to specific build directories or generating images.
 
 After Style Dictionary does steps 4a-4d for each platform, you will have all your output files that are ready to consume in each platform and codebase.
+
+## 6. Log to the console
+
+All console output goes through a single internal module, `lib/utils/logger.js`, rather than calling `console` directly. Verbosity is configured once per build and has three levels:
+
+- **default** — concise. Warnings such as reference errors, token collisions and filtered out references report only how many were found, so a build with many issues does not flood the console.
+- **verbose** — full detail for every warning, including the source file and reference chain for reference errors.
+- **silent** — no logging at all; the build or clean still runs to completion.
+
+The level comes from the `verbose` / `silent` [config](config.md) options or the equivalent `--verbose` / `--silent` CLI flags, with the CLI flags taking precedence over config. Setting `log` to `error` promotes warnings to thrown errors instead of logging them; while building a file, these are thrown _before_ the file is written so a failed build does not leave a partially generated file behind.
+
+Warnings and fatal errors are deliberately treated differently: `--silent` suppresses _logging_, but an error that aborts the build is still thrown and surfaces through normal error handling. A failing build never goes dark.
+
+Logging verbosity is process-global state, configured on every `init()` and not scoped to a `StyleDictionary` instance. A process that builds more than one dictionary should assume the last `init()` wins; the CLI's one-dictionary-per-process model is the case this design targets.

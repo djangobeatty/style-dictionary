@@ -67,6 +67,8 @@ Options:
 | :----------------- | :----------------------------------- | :---------------------------------------------------------------------------------------------------- |
 | Configuration Path | -c <path>, --config <path>           | Set the path to the configuration file. Defaults to './config.json'.                                  |
 | Platform           | -p <platform>, --platform <platform> | Only build a specific platform. If not supplied, builds all platform found in the configuration file. |
+| Verbose            | -v, --verbose                        | Show every warning and error in full detail, e.g. every reference error and collision.                |
+| Silent             | -s, --silent                         | Do not log anything to the console. The build itself still runs to completion.                        |
 
 ## clean
 
@@ -82,6 +84,8 @@ Options:
 | :----------------- | :----------------------------------- | :---------------------------------------------------------------------------------------------------- |
 | Configuration Path | -c <path>, --config <path>           | Set the path to the configuration file. Defaults to './config.json'.                                  |
 | Platform           | -p <platform>, --platform <platform> | Only clean a specific platform. If not supplied, cleans all platform found in the configuration file. |
+| Verbose            | -v, --verbose                        | Show every warning and error in full detail, e.g. every reference error and collision.                |
+| Silent             | -s, --silent                         | Do not log anything to the console. The clean itself still runs to completion.                        |
 
 ## init
 
@@ -95,6 +99,30 @@ Where example-type is one of:
 
 - `basic`
 - `complete`
+
+## Logging
+
+By default Style Dictionary keeps the console output concise. Warnings such as
+reference errors, token collisions and filtered out references only report how
+many were found, so a build with many issues does not flood the console.
+
+Pass `--verbose` to see every individual warning, including the file a reference
+error comes from and the chain of references that leads to it:
+
+```bash
+$ style-dictionary build --verbose
+```
+
+Pass `--silent` to suppress all console output. The build still runs to
+completion and files are still written or removed:
+
+```bash
+$ style-dictionary build --silent
+```
+
+The same behavior can be configured through the `verbose` and `silent` config
+options, and the `log` option can be set to `error` to make warnings such as
+token collisions throw instead of being logged.
 
 ## version
 

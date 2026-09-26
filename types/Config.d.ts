@@ -50,6 +50,11 @@ export interface ResolveReferencesOptionsInternal extends ResolveReferencesOptio
   foundCirc?: Record<string, boolean>;
   firstIteration?: boolean;
   throwImmediately?: boolean;
+  /**
+   * The source file the token that owns the value being resolved comes from,
+   * used to attribute reference errors to the file that defines them.
+   */
+  filePath?: string;
 }
 
 export interface PlatformConfig extends RegexOptions {
@@ -66,6 +71,15 @@ export interface PlatformConfig extends RegexOptions {
 
 export interface Config {
   log?: 'warn' | 'error';
+  /**
+   * Show every warning and error in full detail.
+   * By default only concise messages are logged to avoid flooding the console.
+   */
+  verbose?: boolean;
+  /**
+   * Suppress all console output.
+   */
+  silent?: boolean;
   source?: string[];
   include?: string[];
   tokens?: DesignTokens;
