@@ -34,6 +34,10 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Do not mutate token names or values in a format.** Mutations like this should happen in a transformer.
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
+1. **Log through the logging utility.** Build and clean diagnostics — file created/removed/skipped, token value and name collisions, filtered references, reference errors — are written with `lib/utils/log.js`, which gates every message on the resolved verbosity. Don't call `console.log`/`console.warn` at the point a problem is detected; route it through the utility so `--silent` and `--verbose` apply uniformly across every code path.
+1. **Keep severity and verbosity separate.** `log` (`'warn' | 'error'`) decides whether a problem throws or warns; `verbosity` (`'default' | 'verbose' | 'silent'`) decides how much detail is printed. Neither may change the other: `--silent` suppresses output but build-failing errors still throw, and an error-level problem stays fatal however quiet the logging is.
+1. **Collect diagnostics, then report them once.** Problems found during a pass are accumulated and reported at the end as a category label plus a count, with the full list of occurrences only under `--verbose`. This keeps builds over many token files readable in CI instead of streaming every occurrence as it is detected.
+1. **Run-wide options live on the root config.** Settings that govern a whole build or clean, like `verbosity`, are read from the config object and are not per-platform. Where a CLI flag maps to such an option, the flag takes precedence over the config file.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
 
 ### Commit Rules
@@ -59,6 +63,8 @@ We separate each function/method into its own file and group them into directori
 Any new features should implement the proper unit tests. We use Jest to test our framework.
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **tests**/formats.
+
+Some integration tests assert on the output that a build or clean command prints. Those expectations are `@web/test-runner` snapshots generated from a real run, so a change that deliberately alters what is logged makes them stale. Regenerate them with `npm run test:browser:update-snapshots` and check that every diff matches the intended new output. Do not hand-edit a snapshot, or weaken an assertion, just to make a failing test pass: when a behavior change legitimately invalidates a test's expectation, record the change in the changeset (and the pull request description) so a reviewer can attribute it.
 
 ## Documentation
 

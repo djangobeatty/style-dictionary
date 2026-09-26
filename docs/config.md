@@ -151,6 +151,7 @@ You would then change your npm script or CLI command to run that file with Node:
 | tokens        | Object                   | The tokens object is a way to include inline design tokens as opposed to using the `source` and `include` arrays.                                                                                                                                                                                                                          |
 | properties    | Object                   | **DEPRECATED** The properties object has been renamed to `tokens`. Using the `properties` object will still work for backwards compatibility.                                                                                                                                                                                              |
 | platforms     | Object[Platform]         | An object containing [platform](#platform) config objects that describe how the Style Dictionary should build for that platform. You can add any arbitrary attributes on this object that will get passed to formats and actions (more on these in a bit). This is useful for things like build paths, name prefixes, variable names, etc. |
+| verbosity     | String (optional)        | Controls how much is logged while building or cleaning. One of `default`, `verbose` or `silent`. Defaults to `default`. See [logging](#logging).                                                                                                                                                                                           |
 
 ### Platform
 
@@ -178,3 +179,36 @@ A File configuration object represents a single output file. The `options` objec
 | options.showFileHeader   | Boolean                           | If the generated file should have a comment at the top about being generated. The default fileHeader comment has "Do not edit + Timestamp". By default is "true".                                                                                                                                                                                                                                                                                                                                                                        |
 | options.fileHeader       | String/Function (optional)        | A custom fileHeader that can be either a name of a registered file header (string) or an inline [fileHeader](formats.md#customfileheader) function.                                                                                                                                                                                                                                                                                                                                                                                      |
 | options.outputReferences | Boolean                           | If the file should keep token [references](formats.md#references-in-output-files). By default this is "false".                                                                                                                                                                                                                                                                                                                                                                                                                           |
+
+## Logging
+
+Style Dictionary logs what it is doing while building and cleaning, as well as any problems it
+encounters along the way. How much is logged is controlled by the `verbosity` option:
+
+| Value     | Description                                                                                                                                                             |
+| :-------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `default` | Logs files that were created, removed or skipped, and a concise summary (category + count) of any token value collisions, token name collisions or filtered references. |
+| `verbose` | Logs everything `default` does, but lists every individual occurrence, including the reference chain and source file(s) of every reference error.                       |
+| `silent`  | Logs nothing at all. Errors that fail the build are still thrown, so the process still exits with a non-zero code.                                                      |
+
+```json
+{
+  "verbosity": "verbose",
+  "source": ["tokens/**/*.json"],
+  "platforms": {}
+}
+```
+
+The same can be achieved from the CLI with the `--verbose` and `--silent` flags, which take
+precedence over the value in the configuration file:
+
+```bash
+$ style-dictionary build --verbose
+$ style-dictionary build --silent
+```
+
+Reference errors are always fatal, but they are reported once, after the whole resolution pass has
+completed, so a single build tells you about every broken reference at once instead of stopping at
+the first one. By default that report states how many problems were found; with `--verbose` each
+problem is listed together with the chain of references that failed and the source file(s) of the
+tokens involved.

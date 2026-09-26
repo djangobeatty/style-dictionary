@@ -140,7 +140,7 @@ describe(`integration`, () => {
         await expect(consoleOutput).to.matchSnapshot();
       });
 
-      it(`should not warn user of filtered references with log level set to error`, async () => {
+      it(`should still warn user of filtered references with log level set to error`, async () => {
         const sd = new StyleDictionary({
           log: `error`,
           source: [`__integration__/tokens/**/[!_]*.json?(c)`],
@@ -163,16 +163,11 @@ describe(`integration`, () => {
             },
           },
         });
-        let error;
-        try {
-          await sd.buildAllPlatforms();
-        } catch (e) {
-          error = e;
-        }
-        await expect(cleanConsoleOutput(error.message)).to.matchSnapshot();
-        // only log is the platform name at the start of the buildPlatform method
-        expect(stub.callCount).to.equal(1);
-        expect(stub.firstCall.args).to.eql(['\ncss']);
+        // filtered out references are a warning, never fatal, so this should not throw
+        await sd.buildAllPlatforms();
+        const logs = Array.from(stub.calls).flatMap((call) => call.args);
+        const consoleOutput = logs.map(cleanConsoleOutput).join('\n');
+        await expect(consoleOutput).to.matchSnapshot();
       });
     });
   });

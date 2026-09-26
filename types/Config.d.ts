@@ -27,6 +27,15 @@ export interface LocalOptions {
   [key: string]: any;
 }
 
+/**
+ * Controls how much information Style Dictionary logs while building or cleaning.
+ *
+ * - `default`: logs a concise summary of any problems that were found
+ * - `verbose`: logs every individual occurrence of every problem
+ * - `silent`: logs nothing at all (errors are still thrown)
+ */
+export type LogVerbosity = 'default' | 'silent' | 'verbose';
+
 export interface RegexOptions {
   regex?: RegExp;
   opening_character?: string;
@@ -66,6 +75,7 @@ export interface PlatformConfig extends RegexOptions {
 
 export interface Config {
   log?: 'warn' | 'error';
+  verbosity?: LogVerbosity;
   source?: string[];
   include?: string[];
   tokens?: DesignTokens;

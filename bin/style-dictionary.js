@@ -10,6 +10,7 @@ import program from 'commander';
 // usually also node:fs in this context, but can be customized by user
 import { fs } from 'style-dictionary/fs';
 import StyleDictionary from 'style-dictionary';
+import loadConfig from '../lib/utils/loadConfig.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -37,6 +38,25 @@ function getConfigPath(options) {
   return configPath;
 }
 
+/**
+ * Create a Style Dictionary instance for the given CLI options, letting the
+ * --verbose / --silent flags take precedence over the config file.
+ * @param {Record<string, any>} options
+ * @returns {Promise<StyleDictionary>}
+ */
+async function getStyleDictionary(options) {
+  const configPath = getConfigPath(options);
+  const config = await loadConfig(configPath);
+
+  if (options.verbose) {
+    config.verbosity = 'verbose';
+  } else if (options.silent) {
+    config.verbosity = 'silent';
+  }
+
+  return new StyleDictionary(config);
+}
+
 program.version(pkg.version).description(pkg.description).usage('[command] [options]');
 
 program
@@ -49,6 +69,8 @@ program
     collect,
     [],
   )
+  .option('--verbose', 'log every individual warning and reference chain that is found')
+  .option('--silent', 'suppress all logging, only build-failing errors are still thrown')
   .action(styleDictionaryBuild);
 
 program
@@ -63,6 +85,8 @@ program
     collect,
     [],
   )
+  .option('--verbose', 'log every file that is removed or skipped')
+  .option('--silent', 'suppress all logging, only build-failing errors are still thrown')
   .action(styleDictionaryClean);
 
 program
@@ -96,10 +120,9 @@ program.on('command:*', function () {
 
 async function styleDictionaryBuild(options) {
   options = options || {};
-  const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = await getStyleDictionary(options);
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(
@@ -112,10 +135,9 @@ async function styleDictionaryBuild(options) {
 
 async function styleDictionaryClean(options) {
   options = options || {};
-  const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = await getStyleDictionary(options);
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(

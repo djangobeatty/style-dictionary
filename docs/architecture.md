@@ -38,6 +38,8 @@ Value transforms, transforms that modify a token's value, are skipped if the tok
 
 After all the tokens have been transformed, it then does another pass over the token object looking for aliases, which look like `"{size.font.base.value}"`. When it finds these, it then replaces the reference with the transformed value. Because Style Dictionary merges all token files into a single object, aliases can be in any token file and still work.
 
+Problems found in this pass — broken references in particular — are collected rather than thrown where they are detected, and reported once after the whole pass has completed. A single build therefore surfaces every broken reference at once instead of stopping at the first. How much of that report is printed is governed by the config's `verbosity` option: a count per problem category by default, the full list with the failed reference chain and the source file(s) involved under `--verbose`, and nothing at all under `--silent`. Fatal errors are still thrown in every mode, so the process exits non-zero even when logging is silenced.
+
 ## 5c. Format the tokens into files
 
 Now all the design tokens are ready to be written to a file. Style Dictionary takes the whole transformed and resolved token object and for each file defined in the platform it [formats](formats.md) the token object and write the output to a file. Internally, Style Dictionary creates a flat array of all the design tokens it finds in addition to the token object. This is how you can output a flat SCSS variables file.
