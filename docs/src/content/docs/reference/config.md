@@ -49,6 +49,7 @@ Style Dictionary supports configuration files in these file formats:
 - JSONC
 - JSON5
 - Javascript (ES Modules, default export)
+- TypeScript (ES Modules, default export), on a runtime that can execute TypeScript
 
 Here is an example using an ES module for configuration:
 
@@ -84,6 +85,41 @@ Some interesting things you can do in a JS file that you cannot do in a JSON fil
 
 - Add custom transforms, formats, filters, actions, preprocessors and parsers
 - Programmatically generate your configuration
+
+---
+
+## Token file formats
+
+The design token files matched by the [`source`](#properties) and [`include`](#properties) globs can use any of these file extensions:
+
+- `.json` — JSON
+- `.json5` — JSON5
+- `.jsonc` — JSON with comments
+- `.js` — JavaScript ES module with a default export
+- `.mjs` — JavaScript ES module with a default export
+- `.ts` — TypeScript ES module with a default export (`.mts` and `.cts` as well)
+
+The `.json`, `.json5` and `.jsonc` files are all read with [JSON5](https://json5.org), so comments, trailing commas and unquoted keys are accepted in each of them.
+
+The `.js`, `.mjs` and `.ts` files are imported as modules, so they must default export the token object. This lets you compute token values, share them between token files and, in TypeScript, type-check that theme files stay structurally identical:
+
+```ts title="tokens/dark.ts"
+import light from './light.ts';
+
+const dark: typeof light = {
+  color: {
+    background: { value: '#000000' },
+  },
+};
+
+export default dark;
+```
+
+:::caution
+TypeScript token files are loaded by importing them, which means they require a runtime that executes TypeScript natively: Node.js with type stripping (v22.6 and up), Deno or Bun. On a runtime without it, the build fails with an error naming the TypeScript file that could not be loaded. The same is true for TypeScript configuration files.
+:::
+
+Any other file extension needs a [custom parser](/reference/hooks/parsers). A custom parser whose `pattern` matches a file always takes precedence, so you can also use one to take over the loading of `.ts` token files.
 
 ---
 

@@ -42,6 +42,10 @@ We follow [conventional commits'](https://www.conventionalcommits.org/en/v1.0.0-
 
 Please follow the spec to have a successful commit.
 
+### Changesets
+
+Any change a user would notice — a bug fix, a new option, a behaviour change — needs a changeset. Run `npx changeset`, pick the semver bump, and commit the generated file in `.changeset/`. That file becomes the release-notes entry, so write it for someone reading the changelog, not for a reviewer reading the diff. Test-only and documentation-only changes do not need one.
+
 ## What should be included?
 
 Anything that contributes to the idea of creating cross-platform styles.
@@ -56,13 +60,29 @@ We separate each function/method into its own file and group them into directori
 
 ## Testing
 
-Any new features should implement the proper unit tests. We use Jest to test our framework.
+Any new features should implement the proper unit tests. We use [Mocha](https://mochajs.org/) and [Chai](https://www.chaijs.com/), run through two different runners:
+
+- `npm test` runs `__tests__` and `__integration__` in Chromium through `@web/test-runner`.
+- `npm run test:node` runs `__tests__`, `__integration__` and `__node_tests__` in Node through Mocha.
+
+`lib/` has to work in a browser as well as in Node (see [ARCHITECTURE.md](./ARCHITECTURE.md)), so most suites run in both. Two consequences:
+
+- **`__tests__` and `__integration__` also run in a browser.** That run has no real filesystem: `web-test-runner.config.mjs` mirrors a fixed set of fixture globs (`__tests__/__assets`, `__tests__/__configs`, `__tests__/__json_files`, `__tests__/__tokens`, `__integration__/tokens`) into an in-memory volume. A fixture added outside those globs will not exist in the browser run.
+- **`__node_tests__` only runs under Mocha.** Put a test there when the behaviour cannot exist in a browser at all — spawning the CLI as a subprocess, importing real files from disk, or anything that depends on a capability of the host runtime.
+
+Run `npm run test:node` before opening a pull request; it is the only command that covers `__node_tests__`. Snapshots are updated with `npm run test:update-snapshots`.
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **\_\_tests\_\_**/formats.
 
+### Error messages are part of the contract
+
+User-facing error strings are asserted verbatim in tests, and users grep for them. When a code path needs a clearer message for a new case, add a branch rather than rewording the existing message. Keep the added explanation scoped to the failure it actually explains — a hint appended to everything that comes out of a shared `catch` will misdirect people whose error had another cause entirely.
+
 ## Documentation
 
-We use [Astro](https://astro.build/) to transform the markdown files into a documentation website. To preview it locally, run `npm run docs:start`.
+We use [Astro](https://astro.build/) to transform the markdown files into a documentation website; the pages live in `docs/src/content/docs/`. To preview it locally, run `npm run docs:start`.
+
+Anything that changes what users may write in their config or token files belongs in the reference pages, not only in the changeset. Verify claims about runtime behaviour by running them before writing them down — module-format details are easy to state wrongly (`.mts` is an ES module, `.cts` is CommonJS, and each accepts a different export syntax).
 
 [issues]: https://github.com/amzn/style-dictionary/issues
 [license]: https://github.com/amzn/style-dictionary/blob/main/LICENSE
