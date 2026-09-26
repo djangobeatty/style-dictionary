@@ -103,3 +103,12 @@ To see what version of Style Dictionary you have, run this command:
 ```bash
 $ style-dictionary --version
 ```
+
+## Logging
+
+Both `build` and `clean` accept two flags that control how much is logged:
+
+- `-v, --verbose`: show the full detail of every warning, such as every token collision or reference error, including the file each reference error comes from and the chain of references that led to it.
+- `-s, --silent`: do not log anything at all.
+
+By default, warnings are summarized in a single concise message per file, and the files that were created or removed are logged. These flags set the global verbosity, so a platform that sets its own `log.verbosity` in the config overrides the flag for that platform. See [logging](config.md?id=logging) for the equivalent configuration options.

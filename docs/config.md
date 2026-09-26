@@ -178,3 +178,34 @@ A File configuration object represents a single output file. The `options` objec
 | options.showFileHeader   | Boolean                           | If the generated file should have a comment at the top about being generated. The default fileHeader comment has "Do not edit + Timestamp". By default is "true".                                                                                                                                                                                                                                                                                                                                                                        |
 | options.fileHeader       | String/Function (optional)        | A custom fileHeader that can be either a name of a registered file header (string) or an inline [fileHeader](formats.md#customfileheader) function.                                                                                                                                                                                                                                                                                                                                                                                      |
 | options.outputReferences | Boolean                           | If the file should keep token [references](formats.md#references-in-output-files). By default this is "false".                                                                                                                                                                                                                                                                                                                                                                                                                           |
+
+## Logging
+
+The `log` option controls how much Style Dictionary logs while building. It can be set globally on the configuration, or per platform. It accepts an object with two properties:
+
+- `warnings`: how warnings are handled. `warn` (default) logs them, `error` throws them, `disabled` ignores them.
+- `verbosity`: how much is logged. `default` (concise), `verbose` (full detail per warning), `silent` (no logs).
+
+```json
+{
+  "log": {
+    "warnings": "warn",
+    "verbosity": "default"
+  },
+  "platforms": {
+    "css": {
+      "log": {
+        "warnings": "error"
+      }
+    }
+  }
+}
+```
+
+A platform's `log` is merged onto the global one field by field, so a platform only overrides what it sets. In the example above the `css` platform throws on warnings, while still inheriting the global `verbosity`; the CLI `--verbose`/`--silent` flags work the same way, overriding the global verbosity only where a platform does not set one itself.
+
+For backwards compatibility `log` also still accepts a shorthand string: `'warn'`, `'error'` or `'disabled'` sets the `warnings` level, and `'default'`, `'verbose'` or `'silent'` sets the `verbosity`.
+
+By default warnings such as token collisions, filtered out references and reference errors are summarized in a single concise message per file, so a large dictionary does not flood the console. Setting `verbosity` to `verbose` lists every warning individually, including which file each reference error comes from and the chain of references that led to it. Setting it to `silent` suppresses all output, including the files that were created or removed.
+
+Warnings can be turned into build failures with `"warnings": "error"`, which is useful in CI to make sure a build never silently produces unexpected output. Note that reference errors that cannot be resolved are always fatal and fail the build, regardless of the `warnings` setting.

@@ -10,6 +10,8 @@ Let's take a closer look into each of these steps.
 
 Style Dictionary is a configuration based framework, you tell it what to do in a configuration file. Style Dictionary first parses this [configuration](config.md) to know what to do.
 
+The config can be a plain object or a path to a JSON, JSON5, JSONC or JavaScript file. JSON-style files are parsed synchronously, so that `new StyleDictionary('config.json')` has its options populated before the constructor returns; JavaScript modules are imported asynchronously and the promise is awaited by the caller. Keep that split when touching the config loader, since existing code relies on the synchronous path.
+
 ## 2. Find all token files
 
 In your [config](config.md) file can define `include` and `source`, which are arrays of file path globs. These tell Style Dictionary where to find your token files. You can have them anywhere and in any folder structure as long as you tell Style Dictionary where to find them.

@@ -39,6 +39,39 @@ export interface GetReferencesOptions extends RegexOptions {
   unfilteredTokens?: DesignTokens;
 }
 
+/**
+ * How warnings are handled: log them, throw them, or ignore them.
+ */
+export type LogWarningLevel = 'warn' | 'error' | 'disabled';
+
+/**
+ * How much detail is logged: concise summaries by default,
+ * full detail per warning when `verbose`, nothing at all when `silent`.
+ */
+export type LogVerbosity = 'default' | 'silent' | 'verbose';
+
+/**
+ * The `log` option as the user writes it; every field is optional because a
+ * platform only needs to override the fields it cares about.
+ */
+export interface LogConfig {
+  warnings?: LogWarningLevel;
+  verbosity?: LogVerbosity;
+}
+
+/**
+ * A log config after defaults have been filled in, so every field is set.
+ */
+export interface ResolvedLogConfig {
+  warnings: LogWarningLevel;
+  verbosity: LogVerbosity;
+}
+
+/**
+ * The `log` option also accepts a shorthand string for backwards compatibility.
+ */
+export type LogOption = LogConfig | LogWarningLevel | LogVerbosity;
+
 export interface ResolveReferencesOptions extends RegexOptions {
   ignorePaths?: string[];
   usesDtcg?: boolean;
@@ -50,10 +83,11 @@ export interface ResolveReferencesOptionsInternal extends ResolveReferencesOptio
   foundCirc?: Record<string, boolean>;
   firstIteration?: boolean;
   throwImmediately?: boolean;
+  verbose?: boolean;
 }
 
 export interface PlatformConfig extends RegexOptions {
-  log?: 'warn' | 'error';
+  log?: LogOption;
   transformGroup?: string;
   transforms?: string[] | Omit<Transform, 'name'>[];
   basePxFontSize?: number;
@@ -65,7 +99,7 @@ export interface PlatformConfig extends RegexOptions {
 }
 
 export interface Config {
-  log?: 'warn' | 'error';
+  log?: LogOption;
   source?: string[];
   include?: string[];
   tokens?: DesignTokens;

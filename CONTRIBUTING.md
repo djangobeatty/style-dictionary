@@ -35,6 +35,8 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
+1. **Log through the logging helpers.** Do not call `console.log` or `console.warn` directly in `lib/` and `bin/`; use `lib/utils/log.js` so the user's `log.warnings` (`warn`/`error`/`disabled`) and `log.verbosity` (`default`/`verbose`/`silent`) settings are honored. Warnings should be concise by default, with the full per-item detail (every message, the file it came from, the chain of references that led to it) shown only under `verbose`. Reference errors that cannot be resolved are always fatal.
+1. **Never write resolved configuration back onto an object handed to user code.** Formats, actions and hooks receive `platform` and expect it to mirror what the user wrote. Resolve defaults and merges at the point of use, such as combining the global and per-platform `log` settings, and keep the normalized value local. The shape of a public argument should not vary with how the build was invoked.
 
 ### Commit Rules
 
@@ -56,7 +58,9 @@ We separate each function/method into its own file and group them into directori
 
 ## Testing
 
-Any new features should implement the proper unit tests. We use Jest to test our framework.
+Any new features should implement the proper unit tests. Tests run with mocha in Node (`npm run test:node`) and in the browser through web-test-runner (`npm run test:browser`); `npm run test` runs both. Before opening a pull request, also run `npm run lint`, which covers TypeScript, Prettier and ESLint.
+
+Integration snapshots are compared with strict string equality, so changing a logged message means re-recording the fixtures with `npm run test:browser:update-snapshots`. Re-run the real suites afterwards rather than trusting the recorded files, since a fixture can silently drift from the code that emits it.
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **tests**/formats.
 

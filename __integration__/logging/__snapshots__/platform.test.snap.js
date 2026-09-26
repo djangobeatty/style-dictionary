@@ -18,19 +18,16 @@ Unknown transformGroup "foo" found in platform "css":
 "foo" does not match the name of a registered transformGroup.
 `;
 /* end snapshot integration logging platform should throw and notify users of unknown transformGroups */
-snapshots["integration logging platform property reference errors should throw and notify users of unknown references"] = 
+snapshots["integration logging platform property reference errors should throw and notify users of unknown references"] =
 `
-Property Reference Errors:
-Reference doesn't exist: color.danger.value tries to reference color.red.value, which is not defined.
+Property Reference Errors: 1 reference error found. Use the --verbose flag to see all errors.
 
 Problems were found when trying to resolve property references`;
 /* end snapshot integration logging platform property reference errors should throw and notify users of unknown references */
 
-snapshots["integration logging platform property reference errors circular references should throw and notify users"] = 
+snapshots["integration logging platform property reference errors circular references should throw and notify users"] =
 `
-Property Reference Errors:
-Circular definition cycle:  color.foo.value, color.foo.value, color.foo.value
-Circular definition cycle:  color.teal.value, color.blue.value, color.green.value, color.teal.value
+Property Reference Errors: 2 reference errors found. Use the --verbose flag to see all errors.
 
 Problems were found when trying to resolve property references`;
 /* end snapshot integration logging platform property reference errors circular references should throw and notify users */
