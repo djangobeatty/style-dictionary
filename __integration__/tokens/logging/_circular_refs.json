@@ -1,0 +1,8 @@
+{
+  "color": {
+    "teal": { "value": "{color.blue.value}", "type": "color" },
+    "blue": { "value": "{color.green.value}", "type": "color" },
+    "green": { "value": "{color.teal.value}", "type": "color" },
+    "purple": { "value": "{color.teal.value}", "type": "color" }
+  }
+}

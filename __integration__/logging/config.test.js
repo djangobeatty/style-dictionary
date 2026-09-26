@@ -75,6 +75,35 @@ describe(`integration >`, () => {
           await expect(error.message).to.matchSnapshot();
           expect(stub.called).to.be.false;
         });
+
+        it(`should show every collision and the files they come from with verbose logging`, async () => {
+          const sd = new StyleDictionary({
+            verbosity: `verbose`,
+            source: [
+              // including a specific file twice will throw value collision warnings
+              `__integration__/tokens/size/padding.json`,
+              `__integration__/tokens/size/_padding.json`,
+            ],
+            platforms: {},
+          });
+          await sd.hasInitialized;
+          const consoleOutput = stub.firstCall.args.map(cleanConsoleOutput).join('\n');
+          await expect(consoleOutput).to.matchSnapshot();
+        });
+
+        it(`should not show warnings with silent logging`, async () => {
+          const sd = new StyleDictionary({
+            verbosity: `silent`,
+            source: [
+              // including a specific file twice will throw value collision warnings
+              `__integration__/tokens/size/padding.json`,
+              `__integration__/tokens/size/_padding.json`,
+            ],
+            platforms: {},
+          });
+          await sd.hasInitialized;
+          expect(stub.called).to.be.false;
+        });
       });
     });
   });

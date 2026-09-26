@@ -35,3 +35,29 @@ describe('cliBuildWithJsConfig', () => {
     expect(fileExists('__tests__/__output/android/colors.xml', fs)).to.be.true;
   });
 });
+
+describe('cliLogging', () => {
+  beforeEach(() => {
+    clearOutput(undefined, fs);
+  });
+
+  afterEach(() => {
+    clearOutput();
+  });
+
+  it('should suppress all logging with the --silent flag', () => {
+    const output = childProcess.execSync(
+      'node ./bin/style-dictionary build --config __tests__/__configs/test.js --silent',
+    );
+    expect(output.toString().trim()).to.equal('');
+    expect(fileExists('__tests__/__output/web/_icons.css', fs)).to.be.true;
+  });
+
+  it('should error when both --verbose and --silent are supplied', () => {
+    expect(() =>
+      childProcess.execSync(
+        'node ./bin/style-dictionary build --config __tests__/__configs/test.js --verbose --silent',
+      ),
+    ).to.throw();
+  });
+});

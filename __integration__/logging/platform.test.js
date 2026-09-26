@@ -153,6 +153,40 @@ describe(`integration`, () => {
           expect(stub.callCount).to.equal(1);
           expect(stub.firstCall.args).to.eql(['\ncss']);
         });
+
+        it(`should show every reference error, its reference chain and file with verbose logging`, async () => {
+          const sd = new StyleDictionary({
+            verbosity: `verbose`,
+            source: [`__integration__/tokens/logging/_broken_refs.json`],
+            platforms: {
+              css: {},
+            },
+          });
+          let error;
+          try {
+            await sd.buildAllPlatforms();
+          } catch (e) {
+            error = e;
+          }
+          await expect(cleanConsoleOutput(error.message)).to.matchSnapshot();
+        });
+
+        it(`should show the files of the tokens in a circular reference cycle with verbose logging`, async () => {
+          const sd = new StyleDictionary({
+            verbosity: `verbose`,
+            source: [`__integration__/tokens/logging/_circular_refs.json`],
+            platforms: {
+              css: {},
+            },
+          });
+          let error;
+          try {
+            await sd.buildAllPlatforms();
+          } catch (e) {
+            error = e;
+          }
+          await expect(cleanConsoleOutput(error.message)).to.matchSnapshot();
+        });
       });
     });
   });

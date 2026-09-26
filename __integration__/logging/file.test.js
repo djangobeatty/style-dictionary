@@ -81,6 +81,31 @@ describe(`integration`, () => {
         await expect(consoleOutput).to.matchSnapshot();
       });
 
+      it(`should show every name collision with verbose logging`, async () => {
+        const sd = new StyleDictionary({
+          verbosity: `verbose`,
+          source: [`__integration__/tokens/**/[!_]*.json?(c)`],
+          platforms: {
+            css: {
+              // no name transform means there will be name collisions
+              transforms: [`attribute/cti`],
+              buildPath,
+              files: [
+                {
+                  destination: `nameCollisions.css`,
+                  format: `css/variables`,
+                  filter: (token) => token.type === `color`,
+                },
+              ],
+            },
+          },
+        });
+        await sd.buildAllPlatforms();
+        const logs = Array.from(stub.calls).flatMap((call) => call.args);
+        const consoleOutput = logs.map(cleanConsoleOutput).join('\n');
+        await expect(consoleOutput).to.matchSnapshot();
+      });
+
       it(`should not warn user of name collisions with log level set to error`, async () => {
         const sd = new StyleDictionary({
           log: `error`,
@@ -138,6 +163,61 @@ describe(`integration`, () => {
         const logs = Array.from(stub.calls).flatMap((call) => call.args);
         const consoleOutput = logs.map(cleanConsoleOutput).join('\n');
         await expect(consoleOutput).to.matchSnapshot();
+      });
+
+      it(`should show every filtered out reference with verbose logging`, async () => {
+        const sd = new StyleDictionary({
+          verbosity: `verbose`,
+          source: [`__integration__/tokens/**/[!_]*.json?(c)`],
+          platforms: {
+            css: {
+              transformGroup: `css`,
+              buildPath,
+              files: [
+                {
+                  destination: `filteredReferences.css`,
+                  format: `css/variables`,
+                  options: {
+                    outputReferences: true,
+                  },
+                  // background colors have references, only including them
+                  // should warn the user
+                  filter: (token) => token.attributes.type === `background`,
+                },
+              ],
+            },
+          },
+        });
+        await sd.buildAllPlatforms();
+        const logs = Array.from(stub.calls).flatMap((call) => call.args);
+        const consoleOutput = logs.map(cleanConsoleOutput).join('\n');
+        await expect(consoleOutput).to.matchSnapshot();
+      });
+
+      it(`should not log anything when files are built with silent logging`, async () => {
+        const sd = new StyleDictionary({
+          verbosity: `silent`,
+          source: [`__integration__/tokens/**/[!_]*.json?(c)`],
+          platforms: {
+            css: {
+              transformGroup: `css`,
+              buildPath,
+              files: [
+                {
+                  destination: `silent.css`,
+                  format: `css/variables`,
+                },
+                {
+                  destination: `empty.css`,
+                  format: `css/variables`,
+                  filter: (token) => token.type === `foo`,
+                },
+              ],
+            },
+          },
+        });
+        await sd.buildAllPlatforms();
+        expect(stub.callCount).to.equal(0);
       });
 
       it(`should not warn user of filtered references with log level set to error`, async () => {

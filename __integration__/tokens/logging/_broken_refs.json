@@ -1,0 +1,6 @@
+{
+  "color": {
+    "danger": { "value": "{color.red.value}", "type": "color" },
+    "alert": { "value": "{color.danger.value}", "type": "color" }
+  }
+}

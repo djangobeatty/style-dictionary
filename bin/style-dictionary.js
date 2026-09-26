@@ -37,6 +37,16 @@ function getConfigPath(options) {
   return configPath;
 }
 
+function getVerbosity(options) {
+  if (options.verbose && options.silent) {
+    console.error('Please supply only 1 of --verbose or --silent.');
+    process.exit(1);
+  }
+  if (options.verbose) return 'verbose';
+  if (options.silent) return 'silent';
+  return undefined;
+}
+
 program.version(pkg.version).description(pkg.description).usage('[command] [options]');
 
 program
@@ -49,6 +59,8 @@ program
     collect,
     [],
   )
+  .option('--verbose', 'output verbose logging, e.g. show every collision and reference error')
+  .option('--silent', 'suppress all logging')
   .action(styleDictionaryBuild);
 
 program
@@ -63,6 +75,8 @@ program
     collect,
     [],
   )
+  .option('--verbose', 'output verbose logging, e.g. show every collision and reference error')
+  .option('--silent', 'suppress all logging')
   .action(styleDictionaryClean);
 
 program
@@ -99,7 +113,7 @@ async function styleDictionaryBuild(options) {
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = new StyleDictionary(configPath, { verbosity: getVerbosity(options) });
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(
@@ -115,7 +129,7 @@ async function styleDictionaryClean(options) {
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = new StyleDictionary(configPath, { verbosity: getVerbosity(options) });
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(

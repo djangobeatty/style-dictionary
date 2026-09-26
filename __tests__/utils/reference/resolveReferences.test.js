@@ -227,6 +227,64 @@ describe('utils', () => {
         );
       });
 
+      describe('verbose logging', () => {
+        const brokenRefs = {
+          color: {
+            danger: { value: '{color.red.value}', filePath: 'tokens/color/danger.json' },
+            alert: { value: '{color.danger.value}', filePath: 'tokens/color/alert.json' },
+          },
+        };
+
+        it('should not show reference chains and file paths by default', () => {
+          expect(
+            resolveReferences(brokenRefs.color.danger.value, brokenRefs, {
+              current_context: ['color', 'danger', 'value'],
+            }),
+          ).to.be.undefined;
+          expect(GroupMessages.fetchMessages(PROPERTY_REFERENCE_WARNINGS)).to.eql([
+            "Reference doesn't exist: color.danger.value tries to reference color.red.value, which is not defined.",
+          ]);
+        });
+
+        it('should show the reference chain and the file the reference error is in when verbosity is verbose', () => {
+          expect(
+            resolveReferences(brokenRefs.color.alert.value, brokenRefs, {
+              current_context: ['color', 'alert', 'value'],
+              verbosity: 'verbose',
+            }),
+          ).to.be.undefined;
+          expect(GroupMessages.fetchMessages(PROPERTY_REFERENCE_WARNINGS)).to.eql([
+            `Reference doesn't exist: color.alert.value tries to reference color.red.value, which is not defined.
+    Reference chain: color.alert.value -> color.danger.value -> color.red.value
+    Token color.alert.value is defined in file: tokens/color/alert.json`,
+          ]);
+        });
+
+        it('should show the files the tokens of a circular reference cycle are defined in when verbosity is verbose', () => {
+          const circularRefs = {
+            color: {
+              teal: { value: '{color.blue.value}', filePath: 'tokens/color/teal.json' },
+              blue: { value: '{color.green.value}', filePath: 'tokens/color/blue.json' },
+              green: { value: '{color.teal.value}', filePath: 'tokens/color/green.json' },
+            },
+          };
+          expect(
+            resolveReferences(circularRefs.color.teal.value, circularRefs, {
+              current_context: ['color', 'teal', 'value'],
+              verbosity: 'verbose',
+            }),
+          ).to.equal('{color.teal.value}');
+          expect(GroupMessages.fetchMessages(PROPERTY_REFERENCE_WARNINGS)).to.eql([
+            `Circular definition cycle:  color.teal.value, color.blue.value, color.green.value, color.teal.value
+    Detected while resolving color.teal.value, which is defined in file: tokens/color/teal.json
+    Tokens in this cycle are defined in files:
+        color.teal.value: tokens/color/teal.json
+        color.blue.value: tokens/color/blue.json
+        color.green.value: tokens/color/green.json`,
+          ]);
+        });
+      });
+
       it('should handle 0', () => {
         const obj = {
           test: { value: '{zero.value}' },

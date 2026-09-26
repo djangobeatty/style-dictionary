@@ -20,6 +20,14 @@ import type { Transform } from './Transform.d.ts';
 import type { Formatter } from './Format.d.ts';
 import type { Action } from './Action.d.ts';
 
+/**
+ * The verbosity of the logging output:
+ * - 'silent': no logs at all
+ * - 'default': concise logs, warnings only show a summary message
+ * - 'verbose': logs everything, including every collision and reference error
+ */
+export type Verbosity = 'silent' | 'default' | 'verbose';
+
 export interface LocalOptions {
   showFileHeader?: boolean;
   fileHeader?: string | FileHeader;
@@ -42,6 +50,7 @@ export interface GetReferencesOptions extends RegexOptions {
 export interface ResolveReferencesOptions extends RegexOptions {
   ignorePaths?: string[];
   usesDtcg?: boolean;
+  verbosity?: Verbosity;
 }
 
 export interface ResolveReferencesOptionsInternal extends ResolveReferencesOptions {
@@ -54,6 +63,7 @@ export interface ResolveReferencesOptionsInternal extends ResolveReferencesOptio
 
 export interface PlatformConfig extends RegexOptions {
   log?: 'warn' | 'error';
+  verbosity?: Verbosity;
   transformGroup?: string;
   transforms?: string[] | Omit<Transform, 'name'>[];
   basePxFontSize?: number;
@@ -66,6 +76,7 @@ export interface PlatformConfig extends RegexOptions {
 
 export interface Config {
   log?: 'warn' | 'error';
+  verbosity?: Verbosity;
   source?: string[];
   include?: string[];
   tokens?: DesignTokens;
