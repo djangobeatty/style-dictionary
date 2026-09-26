@@ -1,0 +1,10 @@
+{
+  "color": {
+    "one": {
+      "value": "{color.two.value}"
+    },
+    "two": {
+      "value": "{color.missing.value}"
+    }
+  }
+}

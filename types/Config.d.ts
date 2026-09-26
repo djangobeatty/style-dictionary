@@ -39,6 +39,31 @@ export interface GetReferencesOptions extends RegexOptions {
   unfilteredTokens?: DesignTokens;
 }
 
+export type LogWarningLevels = 'warn' | 'error' | 'disabled';
+export type LogVerbosityLevels = 'default' | 'silent' | 'verbose';
+export type LogErrorLevels = 'throw' | 'console';
+
+export interface LogConfig {
+  /**
+   * What to do with warnings, e.g. token collisions or filtered out references.
+   * Defaults to `warn`.
+   */
+  warnings?: LogWarningLevels;
+  /**
+   * How much is logged to the console.
+   * `default` logs concise messages, `verbose` logs every detail and
+   * `silent` disables all logging.
+   */
+  verbosity?: LogVerbosityLevels;
+  errors?: {
+    /**
+     * Whether broken references should throw an error (default) or
+     * only be logged to the console.
+     */
+    brokenReferences?: LogErrorLevels;
+  };
+}
+
 export interface ResolveReferencesOptions extends RegexOptions {
   ignorePaths?: string[];
   usesDtcg?: boolean;
@@ -50,10 +75,11 @@ export interface ResolveReferencesOptionsInternal extends ResolveReferencesOptio
   foundCirc?: Record<string, boolean>;
   firstIteration?: boolean;
   throwImmediately?: boolean;
+  filePath?: string;
 }
 
 export interface PlatformConfig extends RegexOptions {
-  log?: 'warn' | 'error';
+  log?: LogConfig;
   transformGroup?: string;
   transforms?: string[] | Omit<Transform, 'name'>[];
   basePxFontSize?: number;
@@ -65,7 +91,7 @@ export interface PlatformConfig extends RegexOptions {
 }
 
 export interface Config {
-  log?: 'warn' | 'error';
+  log?: LogConfig;
   source?: string[];
   include?: string[];
   tokens?: DesignTokens;

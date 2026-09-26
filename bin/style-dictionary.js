@@ -3,7 +3,7 @@
 'use strict';
 
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import node_fs from 'node:fs';
 import JSON5 from 'json5';
 import program from 'commander';
@@ -37,6 +37,40 @@ function getConfigPath(options) {
   return configPath;
 }
 
+/**
+ * Load the config object so that CLI options such as --verbose and --silent
+ * can be merged into the `log` config before Style Dictionary is initialized.
+ * @param {string} configPath
+ * @returns {Promise<object>}
+ */
+async function loadConfig(configPath) {
+  const ext = path.extname(configPath).replace(/^\./, '');
+  if (['json', 'json5', 'jsonc'].includes(ext)) {
+    return JSON5.parse(node_fs.readFileSync(configPath, 'utf-8'));
+  }
+  return (await import(pathToFileURL(path.resolve(configPath)).href)).default;
+}
+
+/**
+ * Merge the --verbose/--silent CLI flags into the config's log option.
+ * @param {object} config
+ * @param {{verbose?: boolean, silent?: boolean}} options
+ * @returns {object}
+ */
+function applyLogOptions(config, options) {
+  if (!options.verbose && !options.silent) {
+    return config;
+  }
+  const log = typeof config.log === 'object' && config.log !== null ? config.log : {};
+  return {
+    ...config,
+    log: {
+      ...log,
+      verbosity: options.silent ? 'silent' : 'verbose',
+    },
+  };
+}
+
 program.version(pkg.version).description(pkg.description).usage('[command] [options]');
 
 program
@@ -49,6 +83,8 @@ program
     collect,
     [],
   )
+  .option('-v, --verbose', 'log every warning and error in detail')
+  .option('-s, --silent', 'disable all logging')
   .action(styleDictionaryBuild);
 
 program
@@ -63,6 +99,8 @@ program
     collect,
     [],
   )
+  .option('-v, --verbose', 'log every warning and error in detail')
+  .option('-s, --silent', 'disable all logging')
   .action(styleDictionaryClean);
 
 program
@@ -99,7 +137,9 @@ async function styleDictionaryBuild(options) {
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = new StyleDictionary(
+    applyLogOptions(await loadConfig(configPath), options),
+  );
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(
@@ -115,7 +155,9 @@ async function styleDictionaryClean(options) {
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = new StyleDictionary(
+    applyLogOptions(await loadConfig(configPath), options),
+  );
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(

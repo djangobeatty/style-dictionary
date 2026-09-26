@@ -174,6 +174,105 @@ describe(`integration`, () => {
         expect(stub.callCount).to.equal(1);
         expect(stub.firstCall.args).to.eql(['\ncss']);
       });
+
+      it(`should show all name collisions when verbose`, async () => {
+        const sd = new StyleDictionary({
+          source: [`__integration__/tokens/**/[!_]*.json?(c)`],
+          platforms: {
+            css: {
+              // no name transform means there will be name collisions
+              transforms: [`attribute/cti`],
+              buildPath,
+              log: { verbosity: `verbose` },
+              files: [
+                {
+                  destination: `nameCollisions.css`,
+                  format: `css/variables`,
+                  filter: (token) => token.type === `color`,
+                },
+              ],
+            },
+          },
+        });
+        await sd.buildAllPlatforms();
+        const logs = Array.from(stub.calls).flatMap((call) => call.args);
+        const consoleOutput = logs.map(cleanConsoleOutput).join('\n');
+        await expect(consoleOutput).to.matchSnapshot();
+      });
+
+      it(`should show all filtered references when verbose`, async () => {
+        const sd = new StyleDictionary({
+          source: [`__integration__/tokens/**/[!_]*.json?(c)`],
+          platforms: {
+            css: {
+              transformGroup: `css`,
+              buildPath,
+              log: { verbosity: `verbose` },
+              files: [
+                {
+                  destination: `filteredReferences.css`,
+                  format: `css/variables`,
+                  options: {
+                    outputReferences: true,
+                  },
+                  filter: (token) => token.attributes.type === `background`,
+                },
+              ],
+            },
+          },
+        });
+        await sd.buildAllPlatforms();
+        const logs = Array.from(stub.calls).flatMap((call) => call.args);
+        const consoleOutput = logs.map(cleanConsoleOutput).join('\n');
+        await expect(consoleOutput).to.matchSnapshot();
+      });
+
+      it(`should not log anything when silent`, async () => {
+        const sd = new StyleDictionary({
+          log: { verbosity: `silent` },
+          source: [`__integration__/tokens/**/[!_]*.json?(c)`],
+          platforms: {
+            css: {
+              transformGroup: `css`,
+              buildPath,
+              files: [
+                {
+                  destination: `silent.css`,
+                  format: `css/variables`,
+                },
+              ],
+            },
+          },
+        });
+        await sd.buildAllPlatforms();
+        expect(stub.called).to.be.false;
+      });
+
+      it(`should still log created files but not warnings when warnings are disabled`, async () => {
+        const sd = new StyleDictionary({
+          log: { warnings: `disabled` },
+          source: [`__integration__/tokens/**/[!_]*.json?(c)`],
+          platforms: {
+            css: {
+              // no name transform means there will be name collisions
+              transforms: [`attribute/cti`],
+              buildPath,
+              files: [
+                {
+                  destination: `nameCollisions.css`,
+                  format: `css/variables`,
+                  filter: (token) => token.type === `color`,
+                },
+              ],
+            },
+          },
+        });
+        await sd.buildAllPlatforms();
+        const logs = Array.from(stub.calls).flatMap((call) => call.args);
+        const consoleOutput = logs.map(cleanConsoleOutput).join('\n');
+        expect(consoleOutput).to.not.contain(`token collisions were found`);
+        expect(consoleOutput).to.contain(`✔︎ ${buildPath}nameCollisions.css`);
+      });
     });
   });
 });

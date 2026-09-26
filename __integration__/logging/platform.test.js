@@ -153,6 +153,75 @@ describe(`integration`, () => {
           expect(stub.callCount).to.equal(1);
           expect(stub.firstCall.args).to.eql(['\ncss']);
         });
+
+        it(`should show every reference error and its file when verbose`, async () => {
+          const sd = new StyleDictionary({
+            log: { verbosity: `verbose` },
+            source: [`__integration__/tokens/size/_brokenReferences.json`],
+            platforms: {
+              css: {},
+            },
+          });
+          let error;
+          try {
+            await sd.buildAllPlatforms();
+          } catch (e) {
+            error = e;
+          }
+          await expect(cleanConsoleOutput(error.message)).to.matchSnapshot();
+        });
+
+        it(`should trace the reference chain when verbose`, async () => {
+          const sd = new StyleDictionary({
+            log: { verbosity: `verbose` },
+            source: [`__integration__/tokens/size/_brokenReferenceChain.json`],
+            platforms: {
+              css: {},
+            },
+          });
+          let error;
+          try {
+            await sd.buildAllPlatforms();
+          } catch (e) {
+            error = e;
+          }
+          await expect(cleanConsoleOutput(error.message)).to.matchSnapshot();
+        });
+
+        it(`should log broken references instead of throwing when configured`, async () => {
+          const sd = new StyleDictionary({
+            log: { errors: { brokenReferences: `console` } },
+            tokens: {
+              color: {
+                danger: { value: '{color.red.value}' },
+              },
+            },
+            platforms: {
+              css: {},
+            },
+          });
+          // should not throw
+          await sd.buildAllPlatforms();
+          const logs = Array.from(stub.calls).flatMap((call) => call.args);
+          const consoleOutput = logs.map(cleanConsoleOutput).join('\n');
+          await expect(consoleOutput).to.matchSnapshot();
+        });
+
+        it(`should not log broken references when silent and configured to console`, async () => {
+          const sd = new StyleDictionary({
+            log: { verbosity: `silent`, errors: { brokenReferences: `console` } },
+            tokens: {
+              color: {
+                danger: { value: '{color.red.value}' },
+              },
+            },
+            platforms: {
+              css: {},
+            },
+          });
+          await sd.buildAllPlatforms();
+          expect(stub.called).to.be.false;
+        });
       });
     });
   });

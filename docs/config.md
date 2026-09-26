@@ -151,6 +151,29 @@ You would then change your npm script or CLI command to run that file with Node:
 | tokens        | Object                   | The tokens object is a way to include inline design tokens as opposed to using the `source` and `include` arrays.                                                                                                                                                                                                                          |
 | properties    | Object                   | **DEPRECATED** The properties object has been renamed to `tokens`. Using the `properties` object will still work for backwards compatibility.                                                                                                                                                                                              |
 | platforms     | Object[Platform]         | An object containing [platform](#platform) config objects that describe how the Style Dictionary should build for that platform. You can add any arbitrary attributes on this object that will get passed to formats and actions (more on these in a bit). This is useful for things like build paths, name prefixes, variable names, etc. |
+| log           | Object (optional)        | Configure [logging](#logging) behavior, e.g. how verbose the console output should be and whether warnings should throw.                                                                                                                                                                                                                   |
+
+### Logging
+
+The `log` option can be set on the config (applies to everything) or on a platform (overrides the config for that platform only). It has the following shape:
+
+```js
+{
+  log: {
+    warnings: 'warn', // 'warn' | 'error' | 'disabled'
+    verbosity: 'default', // 'default' | 'silent' | 'verbose'
+    errors: {
+      brokenReferences: 'throw', // 'throw' | 'console'
+    },
+  },
+}
+```
+
+- `warnings`: what to do with warnings such as token collisions or filtered out references. `warn` (default) logs a concise message, `error` throws instead, `disabled` silences the warnings entirely.
+- `verbosity`: how much is logged. `default` logs concise messages, `verbose` logs every warning and error in full detail (including the file a broken reference comes from), `silent` disables all logging.
+- `errors.brokenReferences`: whether broken references throw an error (default) or are only logged to the console.
+
+The legacy string form is still supported: `log: 'warn'` and `log: 'error'` are shorthand for setting `log.warnings`.
 
 ### Platform
 
@@ -164,6 +187,7 @@ A platform is a build target that tells Style Dictionary how to properly transfo
 | options        | Object (optional)        | Options that apply to all files in the platform, for example `outputReferences` and `showFileHeader`                                                                                                                                                                                      |
 | files          | Array[File] (optional)   | [Files](#file) to be generated for this platform.                                                                                                                                                                                                                                         |
 | actions        | Array[String] (optional) | [Actions](actions.md) to be performed after the files are built for that platform. Actions can be any arbitrary code you want to run like copying files, generating assets, etc. You can use pre-defined actions or create custom actions.                                                |
+| log            | Object (optional)        | Overrides the [log](#logging) config for this platform only.                                                                                                                                                                                                                              |
 
 ### File
 

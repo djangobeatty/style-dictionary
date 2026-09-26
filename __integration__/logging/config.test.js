@@ -75,6 +75,74 @@ describe(`integration >`, () => {
           await expect(error.message).to.matchSnapshot();
           expect(stub.called).to.be.false;
         });
+
+        it(`should throw when warnings are set to error`, async () => {
+          const sd = new StyleDictionary(
+            {
+              log: { warnings: `error` },
+              source: [
+                // including a specific file twice will throw value collision warnings
+                `__integration__/tokens/size/padding.json`,
+                `__integration__/tokens/size/_padding.json`,
+              ],
+              platforms: {},
+            },
+            { init: false },
+          );
+
+          let error;
+          try {
+            await sd.init();
+          } catch (e) {
+            error = e;
+          }
+
+          await expect(cleanConsoleOutput(error.message)).to.matchSnapshot();
+          expect(stub.called).to.be.false;
+        });
+
+        it(`should show all collisions when verbose`, async () => {
+          const sd = new StyleDictionary({
+            log: { verbosity: `verbose` },
+            source: [
+              // including a specific file twice will throw value collision warnings
+              `__integration__/tokens/size/padding.json`,
+              `__integration__/tokens/size/_padding.json`,
+            ],
+            platforms: {},
+          });
+          await sd.hasInitialized;
+          const consoleOutput = stub.firstCall.args.map(cleanConsoleOutput).join('\n');
+          await expect(consoleOutput).to.matchSnapshot();
+        });
+
+        it(`should not log anything when silent`, async () => {
+          const sd = new StyleDictionary({
+            log: { verbosity: `silent` },
+            source: [
+              // including a specific file twice will throw value collision warnings
+              `__integration__/tokens/size/padding.json`,
+              `__integration__/tokens/size/_padding.json`,
+            ],
+            platforms: {},
+          });
+          await sd.hasInitialized;
+          expect(stub.called).to.be.false;
+        });
+
+        it(`should not log anything when warnings are disabled`, async () => {
+          const sd = new StyleDictionary({
+            log: { warnings: `disabled` },
+            source: [
+              // including a specific file twice will throw value collision warnings
+              `__integration__/tokens/size/padding.json`,
+              `__integration__/tokens/size/_padding.json`,
+            ],
+            platforms: {},
+          });
+          await sd.hasInitialized;
+          expect(stub.called).to.be.false;
+        });
       });
     });
   });
