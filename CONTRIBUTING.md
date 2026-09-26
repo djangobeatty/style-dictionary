@@ -34,6 +34,7 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Do not mutate token names or values in a format.** Mutations like this should happen in a transform.
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
+1. **Name the missing capability.** When an operation only works on some runtimes or environments, fail with an error that names the missing capability and the runtimes that provide it. Don't let it surface as a misleading downstream error (for example, a parse error) that hides the real cause.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
 
 ### Commit Rules
@@ -54,11 +55,25 @@ If it has a generic and flexible enough use-case, it can be included. We would l
 
 We separate each function/method into its own file and group them into directories. The times we break that is for transforms and formats, but we might change that in the future. Keep the files/methods as self-contained as possible, they should each do one task.
 
+All file loading goes through the single `loadFile` utility, which decides how to read a file from its extension: it dynamically imports ES module files (`.js`, `.mjs`, and TypeScript `.ts`/`.mts` on runtimes that support them) and falls back to JSON5 for everything else. Config files and `source`/`include` token files use this same loader, so add a new extension to the allowlist there rather than duplicating the parse-or-import logic.
+
 ## Testing
 
-Any new features should implement the proper unit tests. We use Jest to test our framework.
+Any new features should implement the proper unit tests. Tests live in **\_\_tests\_\_** (with end-to-end cases in **\_\_integration\_\_**); if you are adding a new transform, action, or format, add unit tests there — see the examples in **\_\_tests\_\_**/formats.
 
-If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **\_\_tests\_\_**/formats.
+A change is only verified when both runners pass:
+
+- `npm test` runs the suite in a browser (Playwright Chromium) via web-test-runner, against the in-memory filesystem shim. This is the default and the one with coverage thresholds.
+- `npm run test:node` runs the Node-only suites with mocha — anything that needs real Node APIs, dynamic imports, or filesystem behavior.
+
+`npm run lint` and `npm run test:perf` also run in CI.
+
+### Tests that depend on a runtime capability
+
+Some features only work on certain runtimes — for example, importing TypeScript files requires Bun, Deno, or Node.js with type stripping enabled. The default CI matrix runs Node versions that may not have such a capability, so don't assume it is available:
+
+- Put tests that require the capability in their own script and run them in a dedicated CI job pinned to a runtime that has it (see the `verify-strip-types` job). Keep them out of the default suite so the rest of the matrix stays green on older runtimes.
+- Inside a shared test, branch on whether the runtime has the capability instead of assuming it is absent — a capability that is off in CI may be on by default for whoever runs the suite locally.
 
 ## Documentation
 

@@ -50,13 +50,17 @@ Let's take a closer look into each of these steps.
 
 Style Dictionary is a configuration based framework, you tell it what to do in a configuration file. Style Dictionary first parses this [configuration](/reference/config) to know what to do.
 
+The configuration can be an inline object or a path to a JSON, JSON5, JSONC, JavaScript, or — on a runtime with native TypeScript support — TypeScript file. Config files and token files are both read through a single loader that decides how to read a file from its extension.
+
 ## 2. Find all token files
 
 In your [config](/reference/config) file can define `include` and `source`, which are arrays of file path globs. These tell Style Dictionary where to find your token files. You can have them anywhere and in any folder structure as long as you tell Style Dictionary where to find them.
 
 ## 3. Parse token files
 
-If there are [custom parsers](/reference/hooks/parsers) defined and applied in the config, Style Dictionary will run those on files the applied parsers match. For JSON or JavaScript token files, those are parsed automatically through built-in parsers.
+If there are [custom parsers](/reference/hooks/parsers) defined and applied in the config, Style Dictionary will run those on files the applied parsers match. For JSON, JavaScript, and TypeScript token files, those are parsed automatically through built-in parsers.
+
+The built-in loader dispatches on file extension: files with a JavaScript or TypeScript extension (`.js`, `.mjs`, `.ts`, `.mts`) are imported as ES modules and their default export is used, while every other extension is read and parsed as JSON5. Loading TypeScript requires a runtime with native TypeScript support, and the build fails with an error naming that requirement on a runtime that lacks it.
 
 ## 4. Deep merge token files
 

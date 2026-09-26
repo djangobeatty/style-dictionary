@@ -157,7 +157,8 @@ Design token files can included inline in the configuration, or be written in se
 - JSON
 - [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments)
 - [JSON5](https://json5.org)
-- ES Modules
+- ES Modules (`.js`, `.mjs`)
+- TypeScript ES Modules (`.ts`, `.mts`), on runtimes with native TypeScript support
 - Potentially any language with [custom parsers](/reference/hooks/parsers)
 
 Tokens can be defined _inline_ in the Style Dictionary configuration, or in files. You can add a `tokens` object to your Style Dictionary configuration like this:
@@ -310,6 +311,43 @@ export default Object.keys(baseColors).reduce((ret, color) => {
 ```
 
 Take a look at the [this example](https://github.com/amzn/style-dictionary/tree/main/examples/advanced/node-modules-as-config-and-properties) if you want to see a more in-depth example of using JavaScript files as input.
+
+### TypeScript modules
+
+Design token files can also be written in TypeScript (`.ts` and `.mts`). Style Dictionary imports them as ES modules and merges their default export just like a JavaScript token file, so no transpilation step is needed:
+
+```typescript title="dark.ts"
+import { light } from './light.js';
+
+type Theme = typeof light;
+
+const dark: Theme = {
+  color: {
+    background: { value: '#000000' },
+  },
+};
+
+export default dark;
+```
+
+```javascript title="config.js"
+export default {
+  source: ['src/*.ts'],
+  platforms: {
+    // ...
+  },
+};
+```
+
+This requires a runtime that can import TypeScript natively:
+
+- [Bun](https://bun.sh) and [Deno](https://deno.com) support this out of the box
+- Node.js supports it from v22.6 behind the `--experimental-strip-types` flag; type stripping is enabled by default from v22.18 and v23.6
+- Browsers do not support importing TypeScript natively
+
+If you point `source` or `include` at a `.ts`/`.mts` file on a runtime without native TypeScript support, the build fails with an error explaining that the runtime lacks this capability.
+
+Note that native type stripping only removes types; it does not transform TypeScript-only syntax that has runtime behavior (such as `enum` or `namespace`). Either avoid those constructs or transpile your token files with a [custom parser](/reference/hooks/parsers) instead.
 
 ### Custom file parsers
 

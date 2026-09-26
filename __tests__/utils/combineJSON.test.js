@@ -78,7 +78,7 @@ describe('utils', () => {
     it('should fail on invalid JSON', async () => {
       await expectThrowsAsync(
         () => combineJSON(['__tests__/__json_files/broken/*.json']),
-        "Failed to load or parse JSON or JS Object: JSON5: invalid character '!' at 2:18",
+        "Failed to load or parse JSON or JS Object:\n\nJSON5: invalid character '!' at 2:18",
       );
     });
 

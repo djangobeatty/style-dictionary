@@ -157,6 +157,8 @@ You would then change your npm script or CLI command to run that file with Node:
 | `format`        | `Record<string, Format>`    | Custom [formats](/reference/hooks/formats) you can include inline in the configuration rather than using `.registerFormat`. The keys in this object will be for format's name and value should be the format function.                                                                                                                     |
 | `usesDtcg`      | `boolean`                   | Whether the tokens are using [DTCG Format](https://tr.designtokens.org/format/) or not. Usually you won't need to configure this, as style-dictionary will auto-detect this format.                                                                                                                                                        |
 
+The `source` and `include` globs may match JSON, JSONC, JSON5, JavaScript ES modules (`.js`, `.mjs`) and TypeScript ES modules (`.ts`, `.mts`). Loading `.ts`/`.mts` files requires a runtime with native TypeScript support: Bun or Deno out of the box, or Node.js with type stripping enabled (Node.js 22.6+ with `--experimental-strip-types`, enabled by default from Node.js 22.18 and 23.6). See [TypeScript modules](/info/tokens#typescript-modules) for details.
+
 ### Log
 
 Log configuration object to configure the [logging behavior of Style Dictionary](/reference/logging).
