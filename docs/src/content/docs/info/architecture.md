@@ -56,7 +56,12 @@ In your [config](/reference/config) file can define `include` and `source`, whic
 
 ## 3. Parse token files
 
-If there are [custom parsers](/reference/hooks/parsers) defined and applied in the config, Style Dictionary will run those on files the applied parsers match. For JSON or JavaScript token files, those are parsed automatically through built-in parsers.
+If there are [custom parsers](/reference/hooks/parsers) defined and applied in the config, Style Dictionary will run those on files the applied parsers match. JSON token files are parsed automatically through built-in parsers.
+
+Module token files — `.js`, `.mjs`, `.ts`, `.mts` and `.cts` — are not parsed as text. They are loaded with a dynamic `import()` so the runtime executes them, which is what makes JavaScript and native TypeScript token files work. Two consequences follow from this:
+
+- A module token file must expose its tokens as its **default export**. A module that only has named exports is skipped without any warning, so a missing `export default` can silently drop an entire file's tokens. Custom parsers still take precedence over the built-in module loading.
+- The module is cached by the runtime's module loader, so a token file matched by both `include` and `source` keeps the tagging it got on the first pass.
 
 ## 4. Deep merge token files
 

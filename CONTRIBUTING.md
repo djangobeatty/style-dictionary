@@ -56,9 +56,11 @@ We separate each function/method into its own file and group them into directori
 
 ## Testing
 
-Any new features should implement the proper unit tests. We use Jest to test our framework.
+Any new features should implement the proper unit tests. Node tests run with Mocha (`npm run test:node`) and browser tests with Web Test Runner, both using Chai assertions.
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **\_\_tests\_\_**/formats.
+
+Some features depend on a runtime capability that is not available on every supported Node version. Native TypeScript token files, for example, need Node 22.6 or newer. Gate tests for these features on the relevant runtime check (such as `process.features.typescript`) and skip when the capability is missing, so the supported version matrix keeps passing instead of failing on older runtimes.
 
 ## Documentation
 

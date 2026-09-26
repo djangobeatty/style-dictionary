@@ -311,6 +311,49 @@ export default Object.keys(baseColors).reduce((ret, color) => {
 
 Take a look at the [this example](https://github.com/amzn/style-dictionary/tree/main/examples/advanced/node-modules-as-config-and-properties) if you want to see a more in-depth example of using JavaScript files as input.
 
+### TypeScript
+
+Token files can also be authored in TypeScript (`.ts`, `.mts` and `.cts`), as long as your runtime is able to run TypeScript natively. This is the case for [Deno](https://deno.com/) and [Bun](https://bun.sh/) out of the box, and for Node.js since v22.6 via [`--experimental-strip-types`](https://nodejs.org/api/typescript.html), which is enabled by default since v23.6.
+
+Note that native TypeScript support only strips types, it does not resolve import specifiers. Whether a token file can import a sibling TypeScript token file with a `.js` extension depends on your runtime; Node.js in particular requires the real `.ts` extension (as shown below).
+
+`.ts` and `.mts` token files use the same ES Module default export as their JavaScript counterparts, which means you can use types to keep your themes in sync. `.cts` is a CommonJS extension, so on Node's strip-only mode it must use `module.exports = ...` — `export default` throws a `SyntaxError` there and TypeScript's `export =` is rejected outright. Runtimes that transform rather than only strip (Deno, Bun, and Node with `--experimental-transform-types`) accept ES Module syntax in `.cts` as well.
+
+Every file matched by `source` or `include` must provide a default export: a token file that only has named exports is skipped without a warning, so a too-broad glob can drop a file's tokens silently. Importing a token file for its types or values, as `dark.ts` does below, does not by itself make that file a source.
+
+```typescript title="light.ts"
+export const light = {
+  color: {
+    base: {
+      red: { value: '#ff0000' },
+    },
+  },
+};
+```
+
+```typescript title="dark.ts"
+import { light } from './light.ts';
+
+type Light = typeof light;
+
+// TypeScript will error if the dark theme is missing tokens that light has
+const dark: Light = {
+  color: {
+    base: {
+      red: { value: '#990000' },
+    },
+  },
+};
+
+export default dark;
+```
+
+```json title="config.json"
+{
+  "source": ["src/dark.ts"]
+}
+```
+
 ### Custom file parsers
 
 You can define custom parsers to parse your source files. This allows you to author your design token files in other languages like [YAML](https://yaml.org/). Custom parsers run on certain input files based on a file path pattern regular expression (similar to how Webpack loaders work). The parser function gets the contents of the file and is expected to return an object of the data of that file for Style Dictionary to merge with the other input file data.
