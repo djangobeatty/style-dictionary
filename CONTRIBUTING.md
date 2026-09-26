@@ -35,6 +35,7 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
+1. **Route build/clean output through the shared logger.** Build and clean share one verbosity model (`--verbose` / `--silent` and the matching config options), implemented in [lib/utils/log.js](lib/utils/log.js). Call `log(opts, ...)` instead of `console.log`/`console.warn`: direct console calls bypass the single suppression point and leak output that `--silent` promises to hide. Genuine build failures belong in thrown errors, which are never suppressed.
 
 ### Commit Rules
 
@@ -59,6 +60,8 @@ We separate each function/method into its own file and group them into directori
 Any new features should implement the proper unit tests. We use Jest to test our framework.
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **tests**/formats.
+
+Build and clean log output is snapshot-tested (see `__integration__/logging/`). Changing a log message will fail those snapshots; regenerate them with `npm run test:browser:update-snapshots` and review the diff instead of accepting it blindly. Snapshots are expected to cover the default concise output and the expanded `--verbose` detail separately.
 
 ## Documentation
 

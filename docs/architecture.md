@@ -47,3 +47,7 @@ Now all the design tokens are ready to be written to a file. Style Dictionary ta
 [Actions](actions.md) are custom code that run in a platform after the files are generated. They are useful for things like copying assets to specific build directories or generating images.
 
 After Style Dictionary does steps 4a-4d for each platform, you will have all your output files that are ready to consume in each platform and codebase.
+
+## Logging and verbosity
+
+Build and clean output flows through a single shared logging layer ([lib/utils/log.js](https://github.com/amzn/style-dictionary/blob/main/lib/utils/log.js)) instead of being printed ad hoc at each call site. One verbosity model applies across the config, platform, file, and clean phases, driven by the `--verbose` and `--silent` CLI flags or the matching `verbose` / `silent` config options. Diagnostics stay concise by default and expand under `--verbose`; `--silent` suppresses routine output entirely. Real build failures are thrown, so they surface on the error channel regardless of verbosity.

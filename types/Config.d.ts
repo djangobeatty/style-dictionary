@@ -50,9 +50,18 @@ export interface ResolveReferencesOptionsInternal extends ResolveReferencesOptio
   foundCirc?: Record<string, boolean>;
   firstIteration?: boolean;
   throwImmediately?: boolean;
+  /** expand reference error messages with source file and reference chain */
+  verbose?: boolean;
 }
 
-export interface PlatformConfig extends RegexOptions {
+export interface LogOptions {
+  /** expand warnings and errors with full detail */
+  verbose?: boolean;
+  /** suppress all console output, thrown errors still surface */
+  silent?: boolean;
+}
+
+export interface PlatformConfig extends RegexOptions, LogOptions {
   log?: 'warn' | 'error';
   transformGroup?: string;
   transforms?: string[] | Omit<Transform, 'name'>[];
@@ -64,7 +73,7 @@ export interface PlatformConfig extends RegexOptions {
   options?: LocalOptions;
 }
 
-export interface Config {
+export interface Config extends LogOptions {
   log?: 'warn' | 'error';
   source?: string[];
   include?: string[];

@@ -49,6 +49,8 @@ program
     collect,
     [],
   )
+  .option('--verbose', 'show verbose output, e.g. every reference error or collision')
+  .option('--silent', 'suppress all console output, build failures still surface')
   .action(styleDictionaryBuild);
 
 program
@@ -63,6 +65,8 @@ program
     collect,
     [],
   )
+  .option('--verbose', 'show verbose output')
+  .option('--silent', 'suppress all console output')
   .action(styleDictionaryClean);
 
 program
@@ -94,17 +98,38 @@ program.on('command:*', function () {
   process.exit(1);
 });
 
+/**
+ * Create a style dictionary object from the config and apply the verbosity
+ * flags from the CLI. Initialization is explicit so the flags are in place
+ * before `.extend()` runs, which is where config level logging happens.
+ * @param {string} configPath
+ * @param {{ verbose?: boolean, silent?: boolean }} options
+ * @returns {Promise<StyleDictionary>}
+ */
+async function createStyleDictionary(configPath, options) {
+  const styleDictionary = new StyleDictionary(configPath, { init: false });
+  styleDictionary.verbose = !!options.verbose;
+  styleDictionary.silent = !!options.silent;
+  await styleDictionary.extend(undefined, true);
+  // make the verbosity available on the options that are passed down to the
+  // platform, file and clean phases
+  styleDictionary.options = {
+    ...styleDictionary.options,
+    verbose: styleDictionary.verbose,
+    silent: styleDictionary.silent,
+  };
+  return styleDictionary;
+}
+
 async function styleDictionaryBuild(options) {
   options = options || {};
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = await createStyleDictionary(configPath, options);
 
   if (options.platform && options.platform.length > 0) {
-    return Promise.all(
-      options.platforms.map((platform) => styleDictionary.buildPlatform(platform)),
-    );
+    return Promise.all(options.platform.map((platform) => styleDictionary.buildPlatform(platform)));
   } else {
     return styleDictionary.buildAllPlatforms();
   }
@@ -115,12 +140,10 @@ async function styleDictionaryClean(options) {
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = await createStyleDictionary(configPath, options);
 
   if (options.platform && options.platform.length > 0) {
-    return Promise.all(
-      options.platforms.map((platform) => styleDictionary.cleanPlatform(platform)),
-    );
+    return Promise.all(options.platform.map((platform) => styleDictionary.cleanPlatform(platform)));
   } else {
     return styleDictionary.cleanAllPlatforms();
   }
