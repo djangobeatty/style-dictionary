@@ -20,6 +20,21 @@ import type { Transform } from './Transform.d.ts';
 import type { Formatter } from './Format.d.ts';
 import type { Action } from './Action.d.ts';
 
+export type LogWarningLevels = 'warn' | 'error';
+export type LogVerbosityLevels = 'silent' | 'default' | 'verbose';
+
+export interface LogConfig {
+  /**
+   * 'warn' logs warnings, 'error' turns them into thrown errors that abort the build.
+   */
+  warnings?: LogWarningLevels;
+  /**
+   * 'silent' logs nothing, 'default' collapses noisy warnings into a summary,
+   * 'verbose' logs every individual occurrence.
+   */
+  verbosity?: LogVerbosityLevels;
+}
+
 export interface LocalOptions {
   showFileHeader?: boolean;
   fileHeader?: string | FileHeader;
@@ -53,7 +68,7 @@ export interface ResolveReferencesOptionsInternal extends ResolveReferencesOptio
 }
 
 export interface PlatformConfig extends RegexOptions {
-  log?: 'warn' | 'error';
+  log?: LogConfig | LogWarningLevels;
   transformGroup?: string;
   transforms?: string[] | Omit<Transform, 'name'>[];
   basePxFontSize?: number;
@@ -65,7 +80,7 @@ export interface PlatformConfig extends RegexOptions {
 }
 
 export interface Config {
-  log?: 'warn' | 'error';
+  log?: LogConfig | LogWarningLevels;
   source?: string[];
   include?: string[];
   tokens?: DesignTokens;

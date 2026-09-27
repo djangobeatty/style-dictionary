@@ -104,6 +104,8 @@ describe(`integration`, () => {
       describe(`property reference errors`, () => {
         it(`should throw and notify users of unknown references`, async () => {
           const sd = new StyleDictionary({
+            // reference errors are warnings, this makes them throw with all details
+            log: { warnings: `error`, verbosity: `verbose` },
             tokens: {
               color: {
                 danger: { value: '{color.red.value}' },
@@ -128,6 +130,8 @@ describe(`integration`, () => {
 
         it(`circular references should throw and notify users`, async () => {
           const sd = new StyleDictionary({
+            // reference errors are warnings, this makes them throw with all details
+            log: { warnings: `error`, verbosity: `verbose` },
             tokens: {
               color: {
                 foo: { value: '{color.foo.value}' },

@@ -151,6 +151,37 @@ You would then change your npm script or CLI command to run that file with Node:
 | tokens        | Object                   | The tokens object is a way to include inline design tokens as opposed to using the `source` and `include` arrays.                                                                                                                                                                                                                          |
 | properties    | Object                   | **DEPRECATED** The properties object has been renamed to `tokens`. Using the `properties` object will still work for backwards compatibility.                                                                                                                                                                                              |
 | platforms     | Object[Platform]         | An object containing [platform](#platform) config objects that describe how the Style Dictionary should build for that platform. You can add any arbitrary attributes on this object that will get passed to formats and actions (more on these in a bit). This is useful for things like build paths, name prefixes, variable names, etc. |
+| log           | Object (optional)        | [Logging](#logging) configuration, see below. Can also be set per [platform](#platform).                                                                                                                                                                                                                                                   |
+
+### Logging
+
+The `log` object controls how much Style Dictionary tells you while it builds or cleans. It can be set on the configuration (applying to everything) or on a single [platform](#platform), where it overrides the levels set on the configuration.
+
+| Attribute | Type              | Description                                                                                                                                                                                         |
+| :-------- | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| verbosity | String (optional) | How much to log: `"silent"`, `"default"` or `"verbose"`. Defaults to `"default"`.                                                                                                                   |
+| warnings  | String (optional) | What to do with warnings: `"warn"` logs them, `"error"` aborts the build by throwing them. Defaults to `"warn"`. Setting `log` to the string `"warn"` or `"error"` is shorthand for this attribute. |
+
+The verbosity levels:
+
+| Level       | Effect                                                                                                                                                                                                                                                      |
+| :---------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"silent"`  | Nothing is logged at all, useful in CI or when Style Dictionary is embedded in a larger build. Genuinely fatal problems are still thrown as errors.                                                                                                         |
+| `"default"` | Files that are created, removed or skipped are logged. Noisy warning categories (reference errors, token name collisions, filtered out output references and source value collisions) are collapsed into a one-line summary telling you how many there are. |
+| `"verbose"` | Every individual occurrence of every warning is logged, including the token file each token involved in a reference error was defined in.                                                                                                                   |
+
+```json
+{
+  "log": {
+    "verbosity": "verbose",
+    "warnings": "error"
+  },
+  "source": ["tokens/**/*.json"],
+  "platforms": {}
+}
+```
+
+The verbosity can also be set from the [CLI](using_the_cli.md) with the `--verbose` and `--silent` flags, which take precedence over the configuration.
 
 ### Platform
 
@@ -164,6 +195,7 @@ A platform is a build target that tells Style Dictionary how to properly transfo
 | options        | Object (optional)        | Options that apply to all files in the platform, for example `outputReferences` and `showFileHeader`                                                                                                                                                                                      |
 | files          | Array[File] (optional)   | [Files](#file) to be generated for this platform.                                                                                                                                                                                                                                         |
 | actions        | Array[String] (optional) | [Actions](actions.md) to be performed after the files are built for that platform. Actions can be any arbitrary code you want to run like copying files, generating assets, etc. You can use pre-defined actions or create custom actions.                                                |
+| log            | Object (optional)        | [Logging](#logging) configuration for this platform, overriding the one set on the configuration.                                                                                                                                                                                         |
 
 ### File
 

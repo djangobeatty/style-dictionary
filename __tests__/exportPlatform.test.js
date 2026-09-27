@@ -386,6 +386,9 @@ describe('exportPlatform', () => {
 
   describe('reference warnings', () => {
     const errorMessage = `Problems were found when trying to resolve property references`;
+    // reference errors are warnings, telling SD to treat warnings as errors makes them throw
+    // and verbose logging keeps the full list of problems in the message
+    const log = { warnings: 'error', verbosity: 'verbose' };
     const platforms = {
       css: {
         transformGroup: `css`,
@@ -401,6 +404,7 @@ describe('exportPlatform', () => {
       const sd = new StyleDictionary({
         tokens,
         platforms,
+        log,
       });
 
       await expect(sd.exportPlatform('css')).to.eventually.be.rejectedWith(errorMessage);
@@ -415,6 +419,7 @@ describe('exportPlatform', () => {
       const sd = new StyleDictionary({
         tokens,
         platforms,
+        log,
       });
       await expect(sd.exportPlatform('css')).to.eventually.be.rejectedWith(errorMessage);
     });
@@ -435,6 +440,7 @@ describe('exportPlatform', () => {
       const sd = new StyleDictionary({
         tokens,
         platforms,
+        log,
       });
       await expect(sd.exportPlatform('css')).to.eventually.be.rejectedWith(errorMessage);
     });

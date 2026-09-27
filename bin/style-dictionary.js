@@ -20,6 +20,20 @@ function collect(val, arr) {
   return arr;
 }
 
+/**
+ * Maps the --verbose and --silent CLI flags onto a log verbosity level.
+ * They take precedence over the verbosity set in the config file.
+ */
+function getVerbosity(options) {
+  if (options.verbose) {
+    return 'verbose';
+  }
+  if (options.silent) {
+    return 'silent';
+  }
+  return undefined;
+}
+
 function getConfigPath(options) {
   let configPath = options.config;
 
@@ -49,6 +63,8 @@ program
     collect,
     [],
   )
+  .option('-v, --verbose', 'log every individual warning occurrence rather than a summary')
+  .option('-s, --silent', 'log nothing at all')
   .action(styleDictionaryBuild);
 
 program
@@ -63,6 +79,8 @@ program
     collect,
     [],
   )
+  .option('-v, --verbose', 'log every individual warning occurrence rather than a summary')
+  .option('-s, --silent', 'log nothing at all')
   .action(styleDictionaryClean);
 
 program
@@ -99,7 +117,7 @@ async function styleDictionaryBuild(options) {
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = new StyleDictionary(configPath, { verbosity: getVerbosity(options) });
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(
@@ -115,7 +133,7 @@ async function styleDictionaryClean(options) {
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = new StyleDictionary(configPath, { verbosity: getVerbosity(options) });
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(

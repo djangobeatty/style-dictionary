@@ -47,3 +47,11 @@ Now all the design tokens are ready to be written to a file. Style Dictionary ta
 [Actions](actions.md) are custom code that run in a platform after the files are generated. They are useful for things like copying assets to specific build directories or generating images.
 
 After Style Dictionary does steps 4a-4d for each platform, you will have all your output files that are ready to consume in each platform and codebase.
+
+## Logging
+
+Logging cuts across all of the steps above rather than belonging to any one of them. A single [log configuration](config.md?id=logging) — a `verbosity` level and a `warnings` level — decides what every step prints and whether a problem it finds is fatal.
+
+Levels are resolved once and then inherited: the CLI flags win over a platform's `log`, which wins over the configuration's `log`, which falls back to the defaults. Because a platform's config is deep-merged from the configuration, a platform only has to state the levels it wants to change.
+
+Problems Style Dictionary can build through — reference errors, token name collisions, filtered out output references, source value collisions — are warnings. They are counted and summarized at default verbosity, listed individually under `"verbose"`, silenced under `"silent"`, and turned into thrown errors by `warnings: "error"`. Only problems that make the build meaningless, like a missing config file or an unregistered transform, are thrown regardless of the log configuration.

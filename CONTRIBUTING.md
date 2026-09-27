@@ -33,8 +33,20 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 
 1. **Do not mutate token names or values in a format.** Mutations like this should happen in a transformer.
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
-1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
+1. **Fail loudly, but through the log layer.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently. See [Logging](#logging) for how to say it.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
+
+### Logging
+
+All user-facing output from `lib/` goes through `lib/utils/log.js`. There are no ungated `console.*` calls in `lib/` — the ESLint `no-console` rule only permits `console.warn`/`console.error`, and even those should not be reached for directly.
+
+1. **Resolve a log config before logging anything.** Use `normalizeLogConfig(log, base)`, which accepts both the full `{ verbosity, warnings }` object and the string shorthand for `warnings`. Precedence runs CLI flags > platform `log` > configuration `log` > `defaultLogConfig`. Anything that logs inside a platform should resolve against that platform's config, not just the dictionary's.
+1. **Route warnings through `reportWarning`.** It is the single decision point for `warnings: 'error'` (throw) versus `'warn'` (log) versus `verbosity: 'silent'` (say nothing). Do not re-implement that branch at a call site, and do not throw a warning-category problem unconditionally — the user chose whether it is fatal.
+1. **Summarize by default, expand under verbose.** A new warning category must collapse to one line at default verbosity — what the category is, how many occurrences (`plural`), and `verbosityHint` so the user knows how to see the rest. Per-occurrence detail belongs to `verbosity: 'verbose'` only. Anything that prints once per token or once per file will drown a real-world dictionary.
+1. **Routine file lifecycle messages** (created, removed, skipped) are logged at default verbosity and suppressed only by `'silent'`.
+1. **Name the file in token problems.** Tokens carry the `filePath` they were loaded from. Any message about a specific token should surface it so users don't have to grep — in a reference cycle, name the origin of every token in the chain.
+
+CLI-supplied levels are passed to the constructor rather than merged into the config, and are carried across `extend()` on `logOverrides` so they keep winning. Config objects are deep-merged, so an override folded into the config would be clobbered by the extending config.
 
 ### Commit Rules
 
@@ -56,9 +68,13 @@ We separate each function/method into its own file and group them into directori
 
 ## Testing
 
-Any new features should implement the proper unit tests. We use Jest to test our framework.
+Any new features should implement the proper unit tests. The suite runs in two environments and both must pass — `npm run test:node` runs Mocha over `__tests__`, `__integration__` and `__node_tests__`, and `npm run test:browser` runs the same `__tests__`/`__integration__` files in a real browser with `@web/test-runner`. `npm test` runs both. Node-only behaviour (the CLI, anything touching `node:fs` directly) belongs in `__node_tests__`, which the browser runner does not pick up.
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **tests**/formats.
+
+Integration tests capture output through `@web/test-runner` snapshots. If you change a message, a generated file's contents, or the shape of a serialized config, the committed snapshots will fail until you regenerate them with `npm run test:browser:update-snapshots`. Those regenerated files are an expected part of such a diff — read them to confirm every change is one you meant to make.
+
+Before opening a pull request, run `npm run lint`, which covers ESLint, Prettier and `tsc --noEmit` over the JSDoc types.
 
 ## Documentation
 

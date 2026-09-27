@@ -67,6 +67,10 @@ Options:
 | :----------------- | :----------------------------------- | :---------------------------------------------------------------------------------------------------- |
 | Configuration Path | -c <path>, --config <path>           | Set the path to the configuration file. Defaults to './config.json'.                                  |
 | Platform           | -p <platform>, --platform <platform> | Only build a specific platform. If not supplied, builds all platform found in the configuration file. |
+| Verbose            | -v, --verbose                        | Log every individual warning occurrence rather than a summary of each warning category.               |
+| Silent             | -s, --silent                         | Log nothing at all. Genuinely fatal problems are still thrown as errors.                              |
+
+Both verbosity flags take precedence over the [`log`](config.md?id=logging) configuration.
 
 ## clean
 
@@ -82,6 +86,8 @@ Options:
 | :----------------- | :----------------------------------- | :---------------------------------------------------------------------------------------------------- |
 | Configuration Path | -c <path>, --config <path>           | Set the path to the configuration file. Defaults to './config.json'.                                  |
 | Platform           | -p <platform>, --platform <platform> | Only clean a specific platform. If not supplied, cleans all platform found in the configuration file. |
+| Verbose            | -v, --verbose                        | Log every individual warning occurrence rather than a summary of each warning category.               |
+| Silent             | -s, --silent                         | Log nothing at all. Genuinely fatal problems are still thrown as errors.                              |
 
 ## init
 
