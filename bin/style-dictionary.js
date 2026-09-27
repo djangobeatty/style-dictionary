@@ -20,6 +20,18 @@ function collect(val, arr) {
   return arr;
 }
 
+/**
+ * Translates the CLI flags into a log verbosity override that takes
+ * precedence over the `log` option in the config.
+ * @param {{ verbose?: boolean, silent?: boolean }} options
+ * @returns {'verbose'|'silent'|undefined}
+ */
+function getVerbosity(options) {
+  if (options.silent) return 'silent';
+  if (options.verbose) return 'verbose';
+  return undefined;
+}
+
 function getConfigPath(options) {
   let configPath = options.config;
 
@@ -49,6 +61,8 @@ program
     collect,
     [],
   )
+  .option('--verbose', 'show every individual warning, e.g. each collision or reference error')
+  .option('--silent', 'disable all logging output')
   .action(styleDictionaryBuild);
 
 program
@@ -63,6 +77,8 @@ program
     collect,
     [],
   )
+  .option('--verbose', 'show every individual warning, e.g. each collision or reference error')
+  .option('--silent', 'disable all logging output')
   .action(styleDictionaryClean);
 
 program
@@ -99,7 +115,9 @@ async function styleDictionaryBuild(options) {
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = new StyleDictionary(configPath, {
+    verbosity: getVerbosity(options),
+  });
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(
@@ -115,7 +133,9 @@ async function styleDictionaryClean(options) {
   const configPath = getConfigPath(options);
 
   // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  const styleDictionary = new StyleDictionary(configPath, {
+    verbosity: getVerbosity(options),
+  });
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(

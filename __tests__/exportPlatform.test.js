@@ -385,7 +385,9 @@ describe('exportPlatform', () => {
   });
 
   describe('reference warnings', () => {
-    const errorMessage = `Problems were found when trying to resolve property references`;
+    // By default reference errors are reported with a concise summary, the
+    // details are only shown when the `verbose` verbosity is used.
+    const errorMessage = `Property Reference Errors:`;
     const platforms = {
       css: {
         transformGroup: `css`,

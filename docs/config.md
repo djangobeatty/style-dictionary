@@ -137,6 +137,51 @@ You would then change your npm script or CLI command to run that file with Node:
 
 ---
 
+## Logging
+
+Style Dictionary logs warnings for things like token collisions, reference errors and
+files that could not be created. By default these are concise summaries; the `log`
+config option lets you control how much is logged.
+
+```json5
+{
+  log: {
+    // 'warn' (default) logs warnings, 'error' throws them as errors instead
+    warnings: 'warn',
+    // 'default' (concise), 'verbose' (every individual warning) or 'silent' (no logs)
+    verbosity: 'default',
+  },
+}
+```
+
+For backwards compatibility `log` can also be the shorthand string `'warn'` or `'error'`,
+which is equivalent to setting only the `warnings` option.
+
+A platform can override the `warnings` mode, e.g. to throw collisions for a single
+platform as errors while the rest keep logging warnings:
+
+```json5
+{
+  platforms: {
+    css: {
+      log: { warnings: 'error' },
+    },
+  },
+}
+```
+
+The `verbosity` always comes from the top-level config, so a platform-level `log`
+can never shadow it. When using the [CLI](using_the_cli.md), the `--verbose` and
+`--silent` flags override the `verbosity` configured in the config file.
+
+| Verbosity | Description                                                                                        |
+| :-------- | :------------------------------------------------------------------------------------------------- |
+| default   | Logs a concise summary for each kind of warning, e.g. how many collisions were detected.           |
+| verbose   | Logs every individual warning, including the source file and reference chain for reference errors. |
+| silent    | Disables all logging output.                                                                       |
+
+---
+
 ## Attributes
 
 | Attribute     | Type                     | Description                                                                                                                                                                                                                                                                                                                                |

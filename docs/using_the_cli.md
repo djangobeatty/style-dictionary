@@ -67,6 +67,8 @@ Options:
 | :----------------- | :----------------------------------- | :---------------------------------------------------------------------------------------------------- |
 | Configuration Path | -c <path>, --config <path>           | Set the path to the configuration file. Defaults to './config.json'.                                  |
 | Platform           | -p <platform>, --platform <platform> | Only build a specific platform. If not supplied, builds all platform found in the configuration file. |
+| Verbose            | --verbose                            | Show every individual warning, e.g. each collision or reference error, instead of a concise summary.  |
+| Silent             | --silent                             | Disable all logging output.                                                                           |
 
 ## clean
 
@@ -82,6 +84,8 @@ Options:
 | :----------------- | :----------------------------------- | :---------------------------------------------------------------------------------------------------- |
 | Configuration Path | -c <path>, --config <path>           | Set the path to the configuration file. Defaults to './config.json'.                                  |
 | Platform           | -p <platform>, --platform <platform> | Only clean a specific platform. If not supplied, cleans all platform found in the configuration file. |
+| Verbose            | --verbose                            | Show every individual warning, e.g. each collision or reference error, instead of a concise summary.  |
+| Silent             | --silent                             | Disable all logging output.                                                                           |
 
 ## init
 

@@ -52,8 +52,31 @@ export interface ResolveReferencesOptionsInternal extends ResolveReferencesOptio
   throwImmediately?: boolean;
 }
 
+/**
+ * Whether warnings are logged (`'warn'`) or thrown as errors (`'error'`).
+ */
+export type LogWarnings = 'warn' | 'error';
+
+/**
+ * How much logging output is shown:
+ * - `'default'`: concise summaries
+ * - `'verbose'`: every individual warning / error
+ * - `'silent'`: no logs at all
+ */
+export type LogVerbosity = 'default' | 'verbose' | 'silent';
+
+export interface LogConfig {
+  warnings?: LogWarnings;
+  verbosity?: LogVerbosity;
+}
+
+/**
+ * Either the shorthand string (`'warn'` | `'error'`) or a full log config object.
+ */
+export type LogConfigInput = LogWarnings | LogConfig;
+
 export interface PlatformConfig extends RegexOptions {
-  log?: 'warn' | 'error';
+  log?: LogConfigInput;
   transformGroup?: string;
   transforms?: string[] | Omit<Transform, 'name'>[];
   basePxFontSize?: number;
@@ -65,7 +88,7 @@ export interface PlatformConfig extends RegexOptions {
 }
 
 export interface Config {
-  log?: 'warn' | 'error';
+  log?: LogConfigInput;
   source?: string[];
   include?: string[];
   tokens?: DesignTokens;

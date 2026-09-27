@@ -34,6 +34,9 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Do not mutate token names or values in a format.** Mutations like this should happen in a transformer.
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
+1. **Resolve config at a single point.** When an option can be set at more than one scope (instance config, platform config, file config, CLI flag), derive the effective value once, in the function that merges those scopes, instead of re-reading each scope at the point of use. A narrower scope may only override the fields it is meant to; an instance- or CLI-level override must always win over a platform-level setting. Scattering the lookup across call sites lets one scope silently shadow another.
+1. **Keep the public types in sync with what each scope may override.** If a platform-level option can only override part of an object, narrow its type accordingly, so a TypeScript user cannot set a value that is then silently discarded.
+1. **Log concisely by default, in detail on request.** Warnings that can repeat many times (collisions, reference errors, filtered references) should print a concise summary by default and the full detail only in verbose mode. All output, including created/removed file logs, is suppressed in silent mode.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
 
 ### Commit Rules
@@ -59,6 +62,8 @@ We separate each function/method into its own file and group them into directori
 Any new features should implement the proper unit tests. We use Jest to test our framework.
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **tests**/formats.
+
+Some tests snapshot console output. When a change intentionally alters that output, regenerate the snapshots with `npm run test:browser:update-snapshots` rather than hand-editing them, and review the resulting diff to confirm it contains only the intended change.
 
 ## Documentation
 
