@@ -47,3 +47,15 @@ Now all the design tokens are ready to be written to a file. Style Dictionary ta
 [Actions](actions.md) are custom code that run in a platform after the files are generated. They are useful for things like copying assets to specific build directories or generating images.
 
 After Style Dictionary does steps 4a-4d for each platform, you will have all your output files that are ready to consume in each platform and codebase.
+
+## Logging
+
+Style Dictionary reports the problems a build runs into instead of failing silently, but keeps the default output bounded: however many problems there are, each category is summarized to its first few occurrences with an `...and N more (M total)` tail. Problems are collected per category — token reference errors, value collisions, output-name collisions, and `outputReferences` warnings for filtered-out tokens — so one noisy category cannot drown out the others. File created / removed / not-created messages are always shown, because they are not problems.
+
+Three options control the output:
+
+- `verbose` expands every category to every occurrence. Reference errors additionally print the reference chain and the token file the broken reference is defined in.
+- `silent` suppresses console output entirely; errors are still thrown.
+- `log` (`warn` by default, or `error`) decides whether a category is logged as a warning or thrown.
+
+Each can be set at the top level of the config or per platform. Because every token keeps the `filePath` of the token file it was parsed from as it moves through the transform pipeline, a message can name the file a broken reference is defined in without re-reading the sources.

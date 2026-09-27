@@ -50,10 +50,14 @@ export interface ResolveReferencesOptionsInternal extends ResolveReferencesOptio
   foundCirc?: Record<string, boolean>;
   firstIteration?: boolean;
   throwImmediately?: boolean;
+  /** the token file the value being resolved is defined in */
+  filePath?: string;
 }
 
 export interface PlatformConfig extends RegexOptions {
   log?: 'warn' | 'error';
+  verbose?: boolean;
+  silent?: boolean;
   transformGroup?: string;
   transforms?: string[] | Omit<Transform, 'name'>[];
   basePxFontSize?: number;
@@ -66,6 +70,10 @@ export interface PlatformConfig extends RegexOptions {
 
 export interface Config {
   log?: 'warn' | 'error';
+  /** expand every grouped build message to every occurrence */
+  verbose?: boolean;
+  /** suppress all console output, errors are still thrown */
+  silent?: boolean;
   source?: string[];
   include?: string[];
   tokens?: DesignTokens;

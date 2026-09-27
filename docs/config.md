@@ -151,6 +151,17 @@ You would then change your npm script or CLI command to run that file with Node:
 | tokens        | Object                   | The tokens object is a way to include inline design tokens as opposed to using the `source` and `include` arrays.                                                                                                                                                                                                                          |
 | properties    | Object                   | **DEPRECATED** The properties object has been renamed to `tokens`. Using the `properties` object will still work for backwards compatibility.                                                                                                                                                                                              |
 | platforms     | Object[Platform]         | An object containing [platform](#platform) config objects that describe how the Style Dictionary should build for that platform. You can add any arbitrary attributes on this object that will get passed to formats and actions (more on these in a bit). This is useful for things like build paths, name prefixes, variable names, etc. |
+| log           | String (optional)        | Log level for the problems found while building, either `warn` (default) or `error`. On `error`, token collisions throw instead of being logged as a warning.                                                                                                                                                                              |
+| verbose       | Boolean (optional)       | List every occurrence of a build problem instead of a concise summary. Reference errors additionally show the reference chain and the token file the broken reference is defined in. Equivalent to the CLI's `--verbose` flag.                                                                                                             |
+| silent        | Boolean (optional)       | Suppress all console output, for example when you run Style Dictionary programmatically. Errors are still thrown. Equivalent to the CLI's `--silent` flag.                                                                                                                                                                                 |
+
+### Logging
+
+Style Dictionary groups the problems it runs into: token reference errors, token collisions, and `outputReferences` warnings for filtered out tokens. By default each group is reported as a concise summary that stays bounded no matter how many problems there are, while file created/removed/not-created messages are always shown.
+
+Set `verbose: true` to expand each group to every occurrence, or `silent: true` to suppress console output entirely. Both can also be set [per platform](#platform), except for the value collisions reported while the source files are merged, which happen before any platform is known.
+
+A `--verbose` or `--silent` flag passed on the command line wins over the same top-level option in the configuration file. Setting the option explicitly on a platform overrides both for that platform.
 
 ### Platform
 
@@ -164,6 +175,9 @@ A platform is a build target that tells Style Dictionary how to properly transfo
 | options        | Object (optional)        | Options that apply to all files in the platform, for example `outputReferences` and `showFileHeader`                                                                                                                                                                                      |
 | files          | Array[File] (optional)   | [Files](#file) to be generated for this platform.                                                                                                                                                                                                                                         |
 | actions        | Array[String] (optional) | [Actions](actions.md) to be performed after the files are built for that platform. Actions can be any arbitrary code you want to run like copying files, generating assets, etc. You can use pre-defined actions or create custom actions.                                                |
+| log            | String (optional)        | Log level for problems found while building this platform. Either `warn` (default) or `error`, which throws instead of logging.                                                                                                                                                           |
+| verbose        | Boolean (optional)       | List every occurrence of a build problem instead of a concise summary. Defaults to the top-level `verbose` option.                                                                                                                                                                        |
+| silent         | Boolean (optional)       | Suppress all console output for this platform. Defaults to the top-level `silent` option.                                                                                                                                                                                                 |
 
 ### File
 

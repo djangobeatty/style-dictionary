@@ -49,6 +49,8 @@ program
     collect,
     [],
   )
+  .option('--verbose', 'expand every build problem to every occurrence, instead of a summary')
+  .option('--silent', 'suppress all console output, errors are still thrown')
   .action(styleDictionaryBuild);
 
 program
@@ -63,6 +65,8 @@ program
     collect,
     [],
   )
+  .option('--verbose', 'expand every build problem to every occurrence, instead of a summary')
+  .option('--silent', 'suppress all console output, errors are still thrown')
   .action(styleDictionaryClean);
 
 program
@@ -94,12 +98,16 @@ program.on('command:*', function () {
   process.exit(1);
 });
 
-async function styleDictionaryBuild(options) {
+function styleDictionaryBuild(options) {
   options = options || {};
   const configPath = getConfigPath(options);
 
-  // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  // Create a style dictionary object with the config. The logging flags are
+  // passed along so that they win over the same keys in the config file.
+  const styleDictionary = new StyleDictionary(configPath, {
+    verbose: options.verbose,
+    silent: options.silent,
+  });
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(
@@ -110,12 +118,16 @@ async function styleDictionaryBuild(options) {
   }
 }
 
-async function styleDictionaryClean(options) {
+function styleDictionaryClean(options) {
   options = options || {};
   const configPath = getConfigPath(options);
 
-  // Create a style dictionary object with the config
-  const styleDictionary = new StyleDictionary(configPath);
+  // Create a style dictionary object with the config. The logging flags are
+  // passed along so that they win over the same keys in the config file.
+  const styleDictionary = new StyleDictionary(configPath, {
+    verbose: options.verbose,
+    silent: options.silent,
+  });
 
   if (options.platform && options.platform.length > 0) {
     return Promise.all(

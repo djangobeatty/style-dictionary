@@ -34,6 +34,8 @@ We use ESLint on the code to ensure a consistent style. Any new code committed m
 1. **Do not mutate token names or values in a format.** Mutations like this should happen in a transformer.
 1. **Be as generic as possible.** Do not hard-code any values or configuration in formats.
 1. **Fail loudly.** Users should be aware if something is missing or configurations aren't correct. This will help debug any issues instead of failing silently.
+1. **Log through the logger.** Never call `console.log`/`console.warn` directly in `lib/`; use `log`/`warn` from `lib/utils/log.js` and pass the resolved `silent` option, so `--silent` is honored everywhere. Problems are collected per category and reported as a concise, bounded summary by default — expand them only with `verbose`, so the amount of output does not grow with the number of problems.
+1. **Make explicit flags outrank config.** When an option can be set both in the config and on the command line, the flag wins: keep it separate and re-apply it after the config is copied onto the instance. A per-platform option falls back to the top-level value with `??`.
 1. **Rely on few dependencies.** This framework is meant to be extended and allows for customization. We don't want to bring a slew of dependencies that most people don't need.
 
 ### Commit Rules
@@ -56,9 +58,11 @@ We separate each function/method into its own file and group them into directori
 
 ## Testing
 
-Any new features should implement the proper unit tests. We use Jest to test our framework.
+Any new features should implement the proper unit tests. The same test files run in two environments: Node with `npm run test:node` (mocha) and the browser with `npm run test:browser` (`@web/test-runner` + Playwright).
 
 If you are adding a new transform, action, or format: please add new unit tests. You can see examples in **tests**/formats.
+
+Some integration tests snapshot console output in `__snapshots__/*.snap.js`. When a change alters what Style Dictionary prints, regenerate those snapshots with `npm run test:browser:update-snapshots` and review the diff: a snapshot should change because the output changed, never because it was emptied or dropped.
 
 ## Documentation
 
